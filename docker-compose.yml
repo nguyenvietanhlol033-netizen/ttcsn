@@ -6,7 +6,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: melia-hotel-backend:1.0.0
     container_name: melia-hotel-backend
     restart: unless-stopped
     ports:
@@ -31,7 +30,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: melia-hotel-frontend:latest
     container_name: melia-hotel-frontend
     restart: unless-stopped
     ports:
