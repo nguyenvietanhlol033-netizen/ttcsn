@@ -301,7 +301,7 @@
       <form onsubmit="event.preventDefault(); Auth.login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value).then(() => closeModal('loginModal'));" class="space-y-4">
         <div>
           <label class="text-xs font-bold text-slate-600 block mb-1">Tên đăng nhập / Email / SĐT</label>
-          <input type="text" id="loginUsername" required placeholder="admin hoặc an.nguyen@gmail.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          <input type="text" id="loginUsername" required placeholder="admin, nva123 hoặc an.nguyen@gmail.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
         </div>
         <div>
           <label class="text-xs font-bold text-slate-600 block mb-1">Mật khẩu</label>
@@ -310,7 +310,7 @@
 
         <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800 space-y-1">
           <div><strong>Tài khoản mẫu kiểm thử:</strong></div>
-          <div>• Khách hàng: <code class="font-bold">an.nguyen@gmail.com</code> / <code class="font-bold">123456</code></div>
+          <div>• Khách hàng: <code class="font-bold">an.nguyen</code> hoặc <code class="font-bold">an.nguyen@gmail.com</code> / <code class="font-bold">123456</code></div>
           <div>• Lễ tân: <code class="font-bold">reception01</code> / <code class="font-bold">123456</code></div>
           <div>• Buồng phòng: <code class="font-bold">housekeeping01</code> / <code class="font-bold">123456</code></div>
           <div>• Admin: <code class="font-bold">admin</code> / <code class="font-bold">123456</code></div>
@@ -345,17 +345,27 @@
       <form onsubmit="
         event.preventDefault();
         Auth.register({
-          hoTen: document.getElementById('regName').value,
-          soDienThoai: document.getElementById('regPhone').value,
-          email: document.getElementById('regEmail').value,
+          tenDangNhap: document.getElementById('regUsername').value.trim(),
+          hoTen: document.getElementById('regName').value.trim(),
+          soDienThoai: document.getElementById('regPhone').value.trim(),
+          email: document.getElementById('regEmail').value.trim(),
           password: document.getElementById('regPassword').value,
-          soCccd: document.getElementById('regCccd').value,
+          soCccd: document.getElementById('regCccd').value.trim(),
           ngaySinh: document.getElementById('regDob').value
-        }).then(() => { closeModal('registerModal'); openModal('loginModal'); });
+        }).then(() => { 
+          closeModal('registerModal'); 
+          openModal('loginModal'); 
+        });
       " class="space-y-3.5">
-        <div>
-          <label class="text-xs font-bold text-slate-600 block mb-1">Họ và tên <span class="text-rose-500">*</span></label>
-          <input type="text" id="regName" required placeholder="Nguyễn Văn A" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">Tên đăng nhập (Username) <span class="text-rose-500">*</span></label>
+            <input type="text" id="regUsername" required placeholder="VD: nva123" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">Họ và tên <span class="text-rose-500">*</span></label>
+            <input type="text" id="regName" required placeholder="Nguyễn Văn A" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>

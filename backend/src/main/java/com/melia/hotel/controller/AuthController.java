@@ -7,6 +7,7 @@ import com.melia.hotel.dto.response.JwtAuthResponse;
 import com.melia.hotel.entity.KhachHang;
 import com.melia.hotel.exception.BusinessException;
 import com.melia.hotel.repository.KhachHangRepository;
+import com.melia.hotel.repository.NhanVienRepository;
 import com.melia.hotel.security.JwtTokenProvider;
 import com.melia.hotel.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,15 +29,18 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final KhachHangRepository khachHangRepo;
+    private final NhanVienRepository nhanVienRepo;
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtTokenProvider tokenProvider,
                           KhachHangRepository khachHangRepo,
+                          NhanVienRepository nhanVienRepo,
                           PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
         this.khachHangRepo = khachHangRepo;
+        this.nhanVienRepo = nhanVienRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -45,7 +49,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<JwtAuthResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
+                        loginRequest.getUsername().trim(),
                         loginRequest.getPassword()
                 )
         );
@@ -70,29 +74,51 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Đăng ký tài khoản Khách hàng mới")
     public ResponseEntity<ApiResponse<String>> registerCustomer(@Valid @RequestBody RegisterRequest request) {
-        if (khachHangRepo.existsByEmail(request.getEmail())) {
+        String email = request.getEmail().trim().toLowerCase();
+        String soDienThoai = request.getSoDienThoai().trim();
+        String soCccd = (request.getSoCccd() != null && !request.getSoCccd().isBlank()) ? request.getSoCccd().trim() : null;
+
+        // Xử lý Tên đăng nhập
+        String tenDangNhap = request.getTenDangNhap();
+        if (tenDangNhap != null && !tenDangNhap.isBlank()) {
+            tenDangNhap = tenDangNhap.trim().toLowerCase();
+            if (nhanVienRepo.existsByTenDangNhap(tenDangNhap) || khachHangRepo.existsByTenDangNhap(tenDangNhap)) {
+                throw new BusinessException("Tên đăng nhập '" + tenDangNhap + "' đã được sử dụng trên hệ thống!");
+            }
+        } else {
+            // Tự động sinh từ tiền tố email
+            String prefix = email.split("@")[0];
+            if (!nhanVienRepo.existsByTenDangNhap(prefix) && !khachHangRepo.existsByTenDangNhap(prefix)) {
+                tenDangNhap = prefix;
+            } else {
+                tenDangNhap = "kh_" + (System.currentTimeMillis() % 1000000);
+            }
+        }
+
+        if (khachHangRepo.existsByEmail(email)) {
             throw new BusinessException("Email này đã được sử dụng trên hệ thống!");
         }
-        if (khachHangRepo.existsBySoDienThoai(request.getSoDienThoai())) {
+        if (khachHangRepo.existsBySoDienThoai(soDienThoai)) {
             throw new BusinessException("Số điện thoại này đã được đăng ký trên hệ thống!");
         }
-        if (request.getSoCccd() != null && !request.getSoCccd().isBlank() && khachHangRepo.existsBySoCccd(request.getSoCccd())) {
+        if (soCccd != null && khachHangRepo.existsBySoCccd(soCccd)) {
             throw new BusinessException("Số CCCD/Định danh cá nhân này đã tồn tại trên hệ thống!");
         }
 
         String maKhachHang = "KH" + System.currentTimeMillis();
         KhachHang khachHang = KhachHang.builder()
                 .maKhachHang(maKhachHang)
-                .hoTen(request.getHoTen())
+                .tenDangNhap(tenDangNhap)
+                .hoTen(request.getHoTen().trim())
                 .ngaySinh(request.getNgaySinh())
-                .soDienThoai(request.getSoDienThoai())
-                .email(request.getEmail())
+                .soDienThoai(soDienThoai)
+                .email(email)
                 .matKhau(passwordEncoder.encode(request.getPassword()))
-                .soCccd(request.getSoCccd())
+                .soCccd(soCccd)
                 .trangThaiTk("ACTIVE")
                 .build();
 
         khachHangRepo.save(khachHang);
-        return ResponseEntity.ok(ApiResponse.success("Đăng ký tài khoản khách hàng thành công", maKhachHang));
+        return ResponseEntity.ok(ApiResponse.success("Đăng ký tài khoản khách hàng thành công", tenDangNhap));
     }
 }

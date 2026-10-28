@@ -21,6 +21,10 @@ spring:
           starttls:
             enable: true
 
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
 # Cấu hình Token JWT
 app:
   jwt:

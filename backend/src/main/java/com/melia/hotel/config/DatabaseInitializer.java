@@ -70,14 +70,28 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // 2. Khách hàng
         KhachHang kh1 = khachHangRepo.save(KhachHang.builder()
-                .maKhachHang("KH001").hoTen("Nguyễn Văn An").ngaySinh(LocalDate.of(1990, 5, 15))
-                .soDienThoai("0912345678").email("an.nguyen@gmail.com")
-                .matKhau(passwordEncoder.encode("123456")).soCccd("001202000001").trangThaiTk("ACTIVE").build());
+                .maKhachHang("KH001")
+                .tenDangNhap("an.nguyen")
+                .hoTen("Nguyễn Văn An")
+                .ngaySinh(LocalDate.of(1990, 5, 15))
+                .soDienThoai("0912345678")
+                .email("an.nguyen@gmail.com")
+                .matKhau(passwordEncoder.encode("123456"))
+                .soCccd("001202000001")
+                .trangThaiTk("ACTIVE")
+                .build());
 
         KhachHang kh2 = khachHangRepo.save(KhachHang.builder()
-                .maKhachHang("KH002").hoTen("Trần Thị Bình").ngaySinh(LocalDate.of(1995, 8, 20))
-                .soDienThoai("0987654321").email("binh.tran@gmail.com")
-                .matKhau(passwordEncoder.encode("123456")).soCccd("001202000002").trangThaiTk("ACTIVE").build());
+                .maKhachHang("KH002")
+                .tenDangNhap("binh.tran")
+                .hoTen("Trần Thị Bình")
+                .ngaySinh(LocalDate.of(1995, 8, 20))
+                .soDienThoai("0987654321")
+                .email("binh.tran@gmail.com")
+                .matKhau(passwordEncoder.encode("123456"))
+                .soCccd("001202000002")
+                .trangThaiTk("ACTIVE")
+                .build());
 
         // 3. Loại phòng
         LoaiPhong lp1 = createLoaiPhong("LP01", "Phòng Deluxe King", new BigDecimal("2500000.00"), 2,

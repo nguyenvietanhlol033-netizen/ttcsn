@@ -8,6 +8,8 @@ import java.time.LocalDate;
 
 public class RegisterRequest {
 
+    private String tenDangNhap;
+
     @NotBlank(message = "Họ tên không được để trống")
     @Size(min = 2, max = 100, message = "Họ tên phải từ 2 đến 100 ký tự")
     private String hoTen;
@@ -29,6 +31,8 @@ public class RegisterRequest {
 
     public RegisterRequest() {}
 
+    public String getTenDangNhap() { return tenDangNhap; }
+    public void setTenDangNhap(String tenDangNhap) { this.tenDangNhap = tenDangNhap; }
     public String getHoTen() { return hoTen; }
     public void setHoTen(String hoTen) { this.hoTen = hoTen; }
     public String getSoDienThoai() { return soDienThoai; }

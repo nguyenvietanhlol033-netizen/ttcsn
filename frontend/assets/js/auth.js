@@ -100,7 +100,15 @@ const Auth = {
       });
 
       if (response && response.success) {
-        showToast('Đăng ký tài khoản thành công! Vui lòng đăng nhập.', 'success');
+        const usernameOrEmail = data.tenDangNhap || data.email;
+        showToast(`Đăng ký tài khoản thành công! Tên đăng nhập: ${usernameOrEmail}`, 'success');
+
+        // Auto fill into login modal
+        const loginUserInput = document.getElementById('loginUsername');
+        const loginPassInput = document.getElementById('loginPassword');
+        if (loginUserInput) loginUserInput.value = usernameOrEmail;
+        if (loginPassInput && data.password) loginPassInput.value = data.password;
+
         return response.data;
       }
     } catch (error) {

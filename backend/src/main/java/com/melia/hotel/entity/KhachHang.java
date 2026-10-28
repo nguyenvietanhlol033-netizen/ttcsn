@@ -1,17 +1,22 @@
 package com.melia.hotel.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "khach_hang")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "danhSachDatPhong", "danhSachDanhGia"})
 public class KhachHang {
 
     @Id
     @Column(name = "ma_khach_hang", length = 20)
     private String maKhachHang;
+
+    @Column(name = "ten_dang_nhap", length = 50, unique = true)
+    private String tenDangNhap;
 
     @Column(name = "ho_ten", nullable = false, length = 100)
     private String hoTen;
@@ -49,6 +54,7 @@ public class KhachHang {
 
     public static class Builder {
         private String maKhachHang;
+        private String tenDangNhap;
         private String hoTen;
         private LocalDate ngaySinh;
         private String soDienThoai;
@@ -58,6 +64,7 @@ public class KhachHang {
         private String trangThaiTk;
 
         public Builder maKhachHang(String maKhachHang) { this.maKhachHang = maKhachHang; return this; }
+        public Builder tenDangNhap(String tenDangNhap) { this.tenDangNhap = tenDangNhap; return this; }
         public Builder hoTen(String hoTen) { this.hoTen = hoTen; return this; }
         public Builder ngaySinh(LocalDate ngaySinh) { this.ngaySinh = ngaySinh; return this; }
         public Builder soDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; return this; }
@@ -68,6 +75,7 @@ public class KhachHang {
         public KhachHang build() {
             KhachHang k = new KhachHang();
             k.maKhachHang = this.maKhachHang;
+            k.tenDangNhap = this.tenDangNhap;
             k.hoTen = this.hoTen;
             k.ngaySinh = this.ngaySinh;
             k.soDienThoai = this.soDienThoai;
@@ -81,6 +89,8 @@ public class KhachHang {
 
     public String getMaKhachHang() { return maKhachHang; }
     public void setMaKhachHang(String maKhachHang) { this.maKhachHang = maKhachHang; }
+    public String getTenDangNhap() { return tenDangNhap; }
+    public void setTenDangNhap(String tenDangNhap) { this.tenDangNhap = tenDangNhap; }
     public String getHoTen() { return hoTen; }
     public void setHoTen(String hoTen) { this.hoTen = hoTen; }
     public LocalDate getNgaySinh() { return ngaySinh; }

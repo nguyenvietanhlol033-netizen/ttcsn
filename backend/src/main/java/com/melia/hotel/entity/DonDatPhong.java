@@ -1,6 +1,7 @@
 package com.melia.hotel.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "don_dat_phong")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class DonDatPhong {
 
     @Id

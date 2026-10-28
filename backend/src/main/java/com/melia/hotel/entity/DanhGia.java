@@ -1,10 +1,12 @@
 package com.melia.hotel.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "danh_gia")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class DanhGia {
 
     @Id
