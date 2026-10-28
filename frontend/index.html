@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khách Sạn Meliá Hà Nội | Trải Nghiệm Nghỉ Dưỡng 5 Sao Đẳng Cấp Quốc Tế</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Playfair Display + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            meliaNavy: '#1E3A8A',
+            meliaGold: '#D4AF37',
+            meliaDark: '#0F172A',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-amber-200 selection:text-blue-950">
+
+  <!-- ==================== HEADER NAVIGATION (LIQUID GLASS) ==================== -->
+  <header class="fixed top-0 left-0 right-0 z-40 glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <!-- Hotel Brand Logo -->
+      <a href="index.html" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-blue-950 text-amber-400 flex items-center justify-center font-serif text-2xl font-bold shadow-md group-hover:scale-105 transition-transform">
+          M
+        </div>
+        <div>
+          <span class="font-serif text-xl sm:text-2xl font-bold tracking-tight text-blue-950 block leading-none">
+            MELIÁ HÀ NỘI
+          </span>
+          <span class="text-[10px] uppercase tracking-widest text-amber-700 font-semibold block mt-0.5">
+            5-Star Luxury Hotel & Suites
+          </span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+        <a href="#hero" class="hover:text-blue-900 transition-colors">Trang chủ</a>
+        <a href="#rooms" class="hover:text-blue-900 transition-colors">Hạng phòng</a>
+        <a href="#amenities" class="hover:text-blue-900 transition-colors">Tiện nghi 5 sao</a>
+        <a href="#reviews" class="hover:text-blue-900 transition-colors">Đánh giá</a>
+        <a href="#contact" class="hover:text-blue-900 transition-colors">Liên hệ</a>
+      </nav>
+
+      <!-- Auth & Operations Container -->
+      <div id="navAuthContainer" class="flex items-center gap-3">
+        <!-- Dynamically populated by Auth.updateUI() -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section id="hero" class="relative pt-20 min-h-screen flex items-center justify-center overflow-hidden">
+    <!-- Hero Background Image & Gradient Overlay -->
+    <div class="absolute inset-0 z-0">
+      <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1920&q=85" 
+           alt="Melia Hanoi Exterior" 
+           class="w-full h-full object-cover scale-105 animate-pulse duration-[10000ms]">
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-slate-950/60 backdrop-blur-[1px]"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center text-white py-24">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold uppercase tracking-widest text-amber-300 mb-6 animate-fade-in">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+        Trải nghiệm nghỉ dưỡng thượng lưu tại Thủ đô Hà Nội
+      </div>
+
+      <h1 class="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-tight mb-6">
+        Nghỉ Dưỡng Đỉnh Cao, <br>
+        <span class="gold-gradient-text">Chuẩn Mực 5 Sao Quốc Tế</span>
+      </h1>
+
+      <p class="text-base sm:text-lg text-slate-200 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+        Tọa lạc ngay giữa trái tim thủ đô Hà Nội, khách sạn Meliá mang đến không gian lưu trú sang trọng, ẩm thực chuẩn Michelin và dịch vụ tận tâm cho mọi kỳ nghỉ đáng nhớ.
+      </p>
+
+      <!-- ==================== REAL-TIME BOOKING SEARCH BAR ==================== -->
+      <div class="glass-card max-w-4xl mx-auto rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-800 border border-white/40">
+        <form onsubmit="event.preventDefault(); Guest.searchAvailableRooms();" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+          <!-- Check-in Date -->
+          <div class="text-left bg-slate-50/90 p-3 rounded-2xl border border-slate-200/80">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              Ngày nhận phòng
+            </label>
+            <input type="date" id="searchCheckIn" class="w-full bg-transparent text-sm font-semibold text-slate-800 focus:outline-none">
+          </div>
+
+          <!-- Check-out Date -->
+          <div class="text-left bg-slate-50/90 p-3 rounded-2xl border border-slate-200/80">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              Ngày trả phòng
+            </label>
+            <input type="date" id="searchCheckOut" class="w-full bg-transparent text-sm font-semibold text-slate-800 focus:outline-none">
+          </div>
+
+          <!-- Guests Count -->
+          <div class="text-left bg-slate-50/90 p-3 rounded-2xl border border-slate-200/80">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              Số lượng khách
+            </label>
+            <select id="searchGuests" class="w-full bg-transparent text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer">
+              <option value="1">1 Khách (Solo)</option>
+              <option value="2" selected>2 Khách (Cặp đôi)</option>
+              <option value="3">3 Khách (Gia đình)</option>
+              <option value="4">4 Khách (Gia đình lớn)</option>
+            </select>
+          </div>
+
+          <!-- Search Button -->
+          <div class="h-full flex items-end">
+            <button type="submit" class="w-full btn-gold h-12 rounded-2xl text-sm font-bold shadow-lg">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              Tìm phòng trống
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ROOM SHOWCASE SECTION ==================== -->
+  <section id="rooms" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="text-xs uppercase tracking-widest text-amber-700 font-bold block mb-2">
+        Danh mục phòng nghỉ cao cấp
+      </span>
+      <h2 class="font-serif text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+        Lựa Chọn Hạng Phòng Sang Trọng
+      </h2>
+      <p class="text-slate-500 text-sm mt-3">
+        Mọi không gian đều được trau chuốt tỉ mỉ với nội thất thượng hạng, hướng nhìn tuyệt mỹ và đầy đủ tiện nghi chuẩn 5 sao.
+      </p>
+    </div>
+
+    <!-- Live Available Room List -->
+    <div id="roomListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Populated dynamically via Guest.searchAvailableRooms() -->
+    </div>
+  </section>
+
+  <!-- ==================== 5-STAR AMENITIES ==================== -->
+  <section id="amenities" class="py-20 bg-slate-900 text-white relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-xs uppercase tracking-widest text-amber-400 font-bold block mb-2">
+          Đặc quyền thượng lưu
+        </span>
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold tracking-tight">
+          Tiện Nghi & Dịch Vụ Đẳng Cấp
+        </h2>
+        <p class="text-slate-300 text-sm mt-3 font-light">
+          Tận hưởng kỳ nghỉ trọn vẹn với các tiện ích chuẩn mực quốc tế ngay trong khuôn viên khách sạn.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Amenity 1 -->
+        <div class="glass-card-dark p-6 rounded-2xl text-center group hover:border-amber-400/50 transition-all">
+          <div class="w-14 h-14 rounded-2xl bg-amber-400/10 text-amber-400 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+          </div>
+          <h3 class="font-serif text-lg font-bold mb-2">Hồ Bơi Vô Cực</h3>
+          <p class="text-xs text-slate-300 leading-relaxed font-light">Nước ấm bốn mùa tại tầng thượng với tầm nhìn 360 độ ôm trọn cảnh sắc lung linh của thành phố.</p>
+        </div>
+
+        <!-- Amenity 2 -->
+        <div class="glass-card-dark p-6 rounded-2xl text-center group hover:border-amber-400/50 transition-all">
+          <div class="w-14 h-14 rounded-2xl bg-amber-400/10 text-amber-400 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <h3 class="font-serif text-lg font-bold mb-2">Ẩm Thực Tinh Hoa</h3>
+          <p class="text-xs text-slate-300 leading-relaxed font-light">Thực đơn quốc tế và hương vị Việt truyền thống do bếp trưởng sao Michelin trực tiếp sáng tạo.</p>
+        </div>
+
+        <!-- Amenity 3 -->
+        <div class="glass-card-dark p-6 rounded-2xl text-center group hover:border-amber-400/50 transition-all">
+          <div class="w-14 h-14 rounded-2xl bg-amber-400/10 text-amber-400 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="font-serif text-lg font-bold mb-2">Melia YHI Spa</h3>
+          <p class="text-xs text-slate-300 leading-relaxed font-light">Liệu pháp thư giãn chuyên sâu bằng thảo mộc tự nhiên giúp phục hồi năng lượng và đánh thức các giác quan.</p>
+        </div>
+
+        <!-- Amenity 4 -->
+        <div class="glass-card-dark p-6 rounded-2xl text-center group hover:border-amber-400/50 transition-all">
+          <div class="w-14 h-14 rounded-2xl bg-amber-400/10 text-amber-400 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          </div>
+          <h3 class="font-serif text-lg font-bold mb-2">Đưa Đón VIP 24/7</h3>
+          <p class="text-xs text-slate-300 leading-relaxed font-light">Dàn xe Mercedes S-Class đưa đón sân bay và tham quan nội thành với tài xế riêng chuẩn phong cách quý tộc.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FEATURED REVIEWS ==================== -->
+  <section id="reviews" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="text-xs uppercase tracking-widest text-amber-700 font-bold block mb-2">
+        Cảm nhận từ khách hàng
+      </span>
+      <h2 class="font-serif text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+        Trải Nghiệm Đáng Nhớ Tại Meliá
+      </h2>
+      <p class="text-slate-500 text-sm mt-3">
+        Những đánh giá chân thực từ du khách trong nước và quốc tế sau các kỳ nghỉ tại Meliá Hà Nội.
+      </p>
+    </div>
+
+    <div id="featuredReviewsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Populated dynamically via Guest.loadFeaturedReviews() -->
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer id="contact" class="bg-slate-950 text-slate-400 py-16 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+        <!-- Col 1 -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-400 text-blue-950 font-serif font-bold flex items-center justify-center text-lg">M</div>
+            <span class="font-serif text-lg font-bold text-white tracking-wide">MELIÁ HÀ NỘI</span>
+          </div>
+          <p class="text-xs leading-relaxed text-slate-400">
+            Khách sạn 5 sao sang trọng bậc nhất thủ đô, mang đến trải nghiệm nghỉ dưỡng tinh tế, tiện nghi tối tân và dịch vụ đẳng cấp thế giới.
+          </p>
+          <div class="text-xs text-amber-400 font-medium">★★★★★ 5-Star International Hotel</div>
+        </div>
+
+        <!-- Col 2 -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-white">Liên Hệ</h4>
+          <p class="text-xs text-slate-400">Địa chỉ: 44B Lý Thường Kiệt, Hoàn Kiếm, Hà Nội</p>
+          <p class="text-xs text-slate-400">Hotline: (+84) 24 3934 3343</p>
+          <p class="text-xs text-slate-400">Email: melia.hanoi@melia.com</p>
+        </div>
+
+        <!-- Col 3 -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-white">Voucher Ưu Đãi</h4>
+          <p class="text-xs text-slate-400">Nhập các mã sau tại bước đặt phòng để nhận ưu đãi:</p>
+          <ul class="text-xs space-y-1.5 font-mono text-amber-300">
+            <li>• <strong class="text-white">MELIAWELCOME</strong> (-200.000 ₫)</li>
+            <li>• <strong class="text-white">SUMMER2026</strong> (-10% tổng đơn)</li>
+            <li>• <strong class="text-white">VIPMELIA</strong> (-500.000 ₫)</li>
+          </ul>
+        </div>
+
+        <!-- Col 4 -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-white">Cổng Quản Trị</h4>
+          <p class="text-xs text-slate-400">Hệ thống phân quyền nghiệp vụ Lễ tân, Buồng phòng và Quản lý khách sạn.</p>
+          <a href="admin.html" class="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-4">
+            Truy cập Cổng Nhân Viên &rarr;
+          </a>
+        </div>
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div>&copy; 2026 Melia Hotel Hanoi. Đồ Án Thực Tập Cơ Sở Ngành - Nhóm 11. All rights reserved.</div>
+        <div class="flex gap-4">
+          <a href="#" class="hover:text-slate-300">Điều khoản dịch vụ</a>
+          <a href="#" class="hover:text-slate-300">Chính sách bảo mật</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================== -->
+  <!-- MODALS (LOGIN, REGISTER, BOOKING WIZARD, VNPAY, QR SUCCESS, REVIEWS)       -->
+  <!-- ========================================================================== -->
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 relative animate-fade-in">
+      <button onclick="closeModal('loginModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-blue-900 text-amber-400 flex items-center justify-center font-serif text-2xl font-bold mx-auto mb-3">M</div>
+        <h3 class="font-serif text-2xl font-bold text-slate-900">Đăng Nhập</h3>
+        <p class="text-xs text-slate-500 mt-1">Dành cho Khách hàng & Nhân viên Khách sạn Meliá</p>
+      </div>
+
+      <form onsubmit="event.preventDefault(); Auth.login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value).then(() => closeModal('loginModal'));" class="space-y-4">
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Tên đăng nhập / Email / SĐT</label>
+          <input type="text" id="loginUsername" required placeholder="admin hoặc an.nguyen@gmail.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Mật khẩu</label>
+          <input type="password" id="loginPassword" required placeholder="Mật khẩu của bạn" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+        </div>
+
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800 space-y-1">
+          <div><strong>Tài khoản mẫu kiểm thử:</strong></div>
+          <div>• Khách hàng: <code class="font-bold">an.nguyen@gmail.com</code> / <code class="font-bold">123456</code></div>
+          <div>• Lễ tân: <code class="font-bold">reception01</code> / <code class="font-bold">123456</code></div>
+          <div>• Buồng phòng: <code class="font-bold">housekeeping01</code> / <code class="font-bold">123456</code></div>
+          <div>• Admin: <code class="font-bold">admin</code> / <code class="font-bold">123456</code></div>
+        </div>
+
+        <button type="submit" class="w-full btn-gold py-3 rounded-xl text-sm font-bold shadow-md">
+          Đăng Nhập
+        </button>
+
+        <div class="text-center text-xs text-slate-500 pt-2">
+          Chưa có tài khoản? 
+          <button type="button" onclick="closeModal('loginModal'); openModal('registerModal');" class="text-blue-900 font-bold hover:underline">
+            Đăng ký ngay
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REGISTER MODAL -->
+  <div id="registerModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto animate-fade-in">
+      <button onclick="closeModal('registerModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <h3 class="font-serif text-2xl font-bold text-slate-900">Đăng Ký Tài Khoản Khách Hàng</h3>
+        <p class="text-xs text-slate-500 mt-1">Trở thành thành viên thân thiết để nhận ngập tràn ưu đãi</p>
+      </div>
+
+      <form onsubmit="
+        event.preventDefault();
+        Auth.register({
+          hoTen: document.getElementById('regName').value,
+          soDienThoai: document.getElementById('regPhone').value,
+          email: document.getElementById('regEmail').value,
+          password: document.getElementById('regPassword').value,
+          soCccd: document.getElementById('regCccd').value,
+          ngaySinh: document.getElementById('regDob').value
+        }).then(() => { closeModal('registerModal'); openModal('loginModal'); });
+      " class="space-y-3.5">
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Họ và tên <span class="text-rose-500">*</span></label>
+          <input type="text" id="regName" required placeholder="Nguyễn Văn A" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">Số điện thoại <span class="text-rose-500">*</span></label>
+            <input type="tel" id="regPhone" required pattern="^(0|\+84)[0-9]{9}$" placeholder="0912345678" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">Số CCCD / Định danh</label>
+            <input type="text" id="regCccd" placeholder="001202000001" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">Email <span class="text-rose-500">*</span></label>
+            <input type="email" id="regEmail" required placeholder="vidu@gmail.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">Ngày sinh</label>
+            <input type="date" id="regDob" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Mật khẩu (từ 6 ký tự) <span class="text-rose-500">*</span></label>
+          <input type="password" id="regPassword" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+        </div>
+
+        <button type="submit" class="w-full btn-gold py-3 rounded-xl text-sm font-bold shadow-md mt-4">
+          Hoàn tất Đăng Ký
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- BOOKING WIZARD MODAL -->
+  <div id="bookingModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto animate-fade-in">
+      <button onclick="closeModal('bookingModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <span class="gold-badge text-xs px-3 py-1 rounded-full font-semibold">Quy Trình Đặt Phòng 5 Sao</span>
+      <h3 id="bookingModalTitle" class="font-serif text-2xl font-bold text-slate-900 mt-2">Phòng Deluxe King</h3>
+      <p id="bookingModalDates" class="text-xs text-slate-500 mt-1">28/10/2026 ➔ 30/10/2026 (2 đêm)</p>
+
+      <div class="my-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Người đặt phòng</label>
+          <input type="text" id="bookingGuestName" readonly class="w-full px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
+        </div>
+
+        <!-- Coupon Voucher Section -->
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Mã Giảm Giá (Voucher)</label>
+          <div class="flex gap-2">
+            <input type="text" id="bookingCouponInput" placeholder="Ví dụ: MELIAWELCOME" class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs uppercase font-mono font-bold focus:border-amber-600 focus:outline-none">
+            <button type="button" onclick="Guest.applyCoupon()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">
+              Áp dụng
+            </button>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">Gợi ý mã: <span class="font-mono text-amber-700">MELIAWELCOME</span>, <span class="font-mono text-amber-700">SUMMER2026</span>, <span class="font-mono text-amber-700">VIPMELIA</span></div>
+        </div>
+
+        <!-- Special Requests -->
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Yêu cầu đặc biệt (tùy chọn)</label>
+          <textarea id="bookingSpecialRequests" rows="2" placeholder="Ví dụ: Phòng tầng cao, view thoáng đãng không hút thuốc..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:border-blue-900 focus:outline-none"></textarea>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-2">Phương thức thanh toán</label>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-blue-900">
+              <input type="radio" name="paymentMethod" value="VNPAY" checked class="text-blue-900">
+              <span class="font-semibold text-slate-800">VNPay Trực Tuyến</span>
+            </label>
+            <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 bg-white cursor-pointer hover:border-blue-900">
+              <input type="radio" name="paymentMethod" value="COUNTER" class="text-blue-900">
+              <span class="font-semibold text-slate-800">Tại quầy Lễ tân</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Breakdown -->
+      <div class="border-t border-slate-200 pt-4 space-y-1.5 text-xs">
+        <div class="flex justify-between text-slate-500">
+          <span>Tiền phòng tạm tính:</span>
+          <span id="bookingSubtotal" class="font-semibold text-slate-800">0 ₫</span>
+        </div>
+        <div class="flex justify-between text-emerald-600">
+          <span>Khuyến mại giảm giá:</span>
+          <span id="bookingDiscount" class="font-semibold">0 ₫</span>
+        </div>
+        <div class="flex justify-between text-base font-bold text-blue-950 pt-2 border-t border-slate-100">
+          <span>Tổng thanh toán:</span>
+          <span id="bookingFinalTotal" class="font-serif text-xl font-black text-amber-700">0 ₫</span>
+        </div>
+      </div>
+
+      <button id="btnSubmitBooking" type="button" onclick="Guest.confirmBooking()" class="w-full btn-gold py-3.5 rounded-2xl text-sm font-bold shadow-lg mt-6">
+        Xác nhận Đặt phòng
+      </button>
+    </div>
+  </div>
+
+  <!-- VNPAY GATEWAY SIMULATOR MODAL -->
+  <div id="vnpayModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl text-center animate-fade-in border border-slate-200">
+      <div class="w-16 h-16 rounded-full bg-blue-50 text-blue-900 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+      </div>
+
+      <h3 class="font-serif text-2xl font-bold text-slate-900">Cổng Thanh Toán VNPay</h3>
+      <p class="text-xs text-slate-500 mt-1">Môi trường thử nghiệm Sandbox - Melia Hanoi</p>
+
+      <div class="my-6 p-4 rounded-2xl bg-blue-50 border border-blue-200 text-left space-y-2 text-xs">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Mã đơn hàng:</span>
+          <span id="vnpayBookingId" class="font-mono font-bold text-slate-800">DP...</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Số tiền cần thanh toán:</span>
+          <span id="vnpayAmount" class="font-bold text-blue-900 text-sm">0 ₫</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Ngân hàng:</span>
+          <span class="font-semibold text-slate-800">NCB / VNPAY-QR</span>
+        </div>
+      </div>
+
+      <button id="btnSimulateVNPaySuccess" type="button" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-md transition-all mb-3 flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Xác nhận Đã Chuyển Khoản Thành Công
+      </button>
+
+      <button type="button" onclick="closeModal('vnpayModal')" class="text-xs text-slate-400 hover:text-slate-600">
+        Hủy giao dịch
+      </button>
+    </div>
+  </div>
+
+  <!-- BOOKING SUCCESS & QR CODE MODAL -->
+  <div id="bookingSuccessModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl text-center animate-fade-in border border-slate-200">
+      <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      </div>
+
+      <h3 class="font-serif text-2xl font-bold text-slate-900">Đặt Phòng Thành Công!</h3>
+      <p class="text-xs text-slate-500 mt-1">Cảm ơn Quý khách đã lựa chọn Khách sạn Meliá Hà Nội</p>
+
+      <!-- QR Code Display Box -->
+      <div class="my-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col items-center">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">Mã QR Check-in Quầy Lễ Tân</span>
+        <div class="p-3 bg-white rounded-xl shadow-md border border-slate-200">
+          <img id="successQrCodeImg" src="" alt="Mã QR Check-in" class="w-44 h-44 object-contain">
+        </div>
+        <div class="mt-3 font-mono font-bold text-base text-blue-950" id="successBookingId">DP...</div>
+      </div>
+
+      <div class="text-left text-xs space-y-1.5 p-3 rounded-xl bg-slate-100/80 mb-6">
+        <div class="flex justify-between"><span class="text-slate-500">Hạng phòng:</span> <strong id="successRoomType" class="text-slate-800"></strong></div>
+        <div class="flex justify-between"><span class="text-slate-500">Thời gian:</span> <strong id="successDates" class="text-slate-800"></strong></div>
+        <div class="flex justify-between"><span class="text-slate-500">Tổng tiền:</span> <strong id="successTotal" class="text-amber-700"></strong></div>
+        <div class="flex justify-between"><span class="text-slate-500">Trạng thái đơn:</span> <strong id="successStatus" class="text-emerald-700 font-bold"></strong></div>
+      </div>
+
+      <button type="button" onclick="closeModal('bookingSuccessModal')" class="w-full btn-navy py-3 rounded-xl text-xs font-bold">
+        Đóng & Xem Trang Chủ
+      </button>
+    </div>
+  </div>
+
+  <!-- MY BOOKINGS MODAL -->
+  <div id="myBookingsModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto animate-fade-in">
+      <button onclick="closeModal('myBookingsModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <h3 class="font-serif text-2xl font-bold text-slate-900 mb-1">Lịch Sử Đơn Đặt Phòng</h3>
+      <p class="text-xs text-slate-500 mb-6">Quản lý các kỳ nghỉ, xem mã QR check-in và gửi đánh giá chất lượng</p>
+
+      <div id="myBookingsList" class="space-y-3">
+        <!-- Populated dynamically via Guest.openMyBookings() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT REVIEW MODAL -->
+  <div id="reviewModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 relative animate-fade-in">
+      <button onclick="closeModal('reviewModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <input type="hidden" id="reviewBookingId">
+      <input type="hidden" id="reviewRating" value="5">
+
+      <div class="text-center mb-6">
+        <span class="gold-badge text-xs px-3 py-1 rounded-full font-semibold">Trải Nghiệm Khách Hàng</span>
+        <h3 class="font-serif text-2xl font-bold text-slate-900 mt-2">Đánh Giá Kỳ Nghỉ Của Bạn</h3>
+        <p class="text-xs text-slate-500 mt-1">Ý kiến của bạn là động lực để Meliá không ngừng nâng tầm phục vụ</p>
+      </div>
+
+      <!-- Interactive 5-Star Selector -->
+      <div class="flex justify-center gap-2 mb-6">
+        <button type="button" onclick="Guest.updateReviewStars(1)" id="star_1" class="text-amber-400 hover:scale-125 transition-transform"><svg class="w-8 h-8 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></button>
+        <button type="button" onclick="Guest.updateReviewStars(2)" id="star_2" class="text-amber-400 hover:scale-125 transition-transform"><svg class="w-8 h-8 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></button>
+        <button type="button" onclick="Guest.updateReviewStars(3)" id="star_3" class="text-amber-400 hover:scale-125 transition-transform"><svg class="w-8 h-8 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></button>
+        <button type="button" onclick="Guest.updateReviewStars(4)" id="star_4" class="text-amber-400 hover:scale-125 transition-transform"><svg class="w-8 h-8 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></button>
+        <button type="button" onclick="Guest.updateReviewStars(5)" id="star_5" class="text-amber-400 hover:scale-125 transition-transform"><svg class="w-8 h-8 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></button>
+      </div>
+
+      <div class="mb-5">
+        <label class="text-xs font-bold text-slate-600 block mb-1">Nhận xét chi tiết</label>
+        <textarea id="reviewComment" rows="4" placeholder="Chia sẻ cảm nhận về phòng ốc, thái độ nhân viên và các tiện ích..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs focus:border-blue-900 focus:outline-none"></textarea>
+      </div>
+
+      <button type="button" onclick="Guest.submitReview()" class="w-full btn-gold py-3 rounded-xl text-xs font-bold shadow-md">
+        Gửi Đánh Giá Của Bạn
+      </button>
+    </div>
+  </div>
+
+  <!-- Central JS Modules -->
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/guest.js"></script>
+</body>
+</html>

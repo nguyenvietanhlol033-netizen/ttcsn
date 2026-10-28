@@ -1,0 +1,11 @@
+.git
+.mvn
+src
+melia_hotel_db.sql
+*.cmd
+*.bat
+README.md
+target/classes
+target/generated-sources
+target/maven-archiver
+target/maven-status

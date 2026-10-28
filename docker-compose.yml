@@ -1,0 +1,72 @@
+services:
+  # =========================================================================
+  # 1. BACKEND SERVICE (Spring Boot 3 + Java 17 LTS)
+  # =========================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: melia-hotel-backend:1.0.0
+    container_name: melia-hotel-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=h2
+      - TZ=Asia/Ho_Chi_Minh
+      - JAVA_OPTS=-Xms256m -Xmx512m -Dfile.encoding=UTF-8
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/v1/rooms/types || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    networks:
+      - melia-net
+
+  # =========================================================================
+  # 2. FRONTEND SERVICE (Nginx Alpine + Liquid Glass UI/UX Pro Max)
+  # =========================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: melia-hotel-frontend:latest
+    container_name: melia-hotel-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - melia-net
+
+  # =========================================================================
+  # 3. MYSQL DATABASE SERVICE (Tùy chọn: Chạy khi cần MySQL thay vì H2)
+  # Khởi chạy: docker compose --profile with-mysql up -d
+  # =========================================================================
+  mysql:
+    image: mysql:8
+    container_name: melia-hotel-mysql
+    profiles:
+      - with-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: melia_hotel_db
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - ./backend/melia_hotel_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - mysql_data:/var/lib/mysql
+    networks:
+      - melia-net
+
+networks:
+  melia-net:
+    driver: bridge
+
+volumes:
+  mysql_data:

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Quản Trị Nghiệp Vụ Khách Sạn Meliá Hà Nội | Melia Operations Portal</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter + Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js for Admin Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            meliaNavy: '#1E3A8A',
+            meliaGold: '#D4AF37',
+            meliaDark: '#0F172A',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-amber-200">
+
+  <!-- ==================== TOP NAVIGATION BAR ==================== -->
+  <header class="bg-blue-950 text-white border-b border-blue-900 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="flex items-center gap-2 group">
+          <div class="w-8 h-8 rounded-lg bg-amber-400 text-blue-950 flex items-center justify-center font-serif text-lg font-bold shadow-sm">
+            M
+          </div>
+          <div>
+            <span class="font-serif font-bold text-base tracking-wide text-white block leading-tight">MELIÁ HÀ NỘI</span>
+            <span class="text-[9px] uppercase tracking-widest text-amber-300 font-semibold block">Staff Operations</span>
+          </div>
+        </a>
+        <div class="h-6 w-px bg-blue-800 hidden sm:block"></div>
+        <span class="text-xs text-slate-300 font-medium hidden sm:block">Hệ Thống Phân Quyền Nghiệp Vụ RBAC</span>
+      </div>
+
+      <!-- Staff Profile & Navigation -->
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span class="hidden md:inline">Trang Chủ Khách</span>
+        </a>
+
+        <div id="staffHeaderProfile" class="flex items-center gap-3 pl-4 border-l border-blue-900">
+          <!-- Populated by script -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN PORTAL CONTAINER ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Staff Login Warning if not authenticated -->
+    <div id="unauthAlert" class="hidden mb-6 p-6 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <h4 class="font-bold text-base">Bạn chưa đăng nhập bằng tài khoản nhân viên!</h4>
+          <p class="text-xs mt-1 text-amber-800">Vui lòng đăng nhập bằng một trong các tài khoản: <code class="font-bold">admin</code>, <code class="font-bold">reception01</code>, <code class="font-bold">housekeeping01</code> hoặc <code class="font-bold">accountant01</code> (Mật khẩu: <code class="font-bold">123456</code>).</p>
+        </div>
+        <button onclick="openModal('staffLoginModal')" class="btn-navy text-xs px-4 py-2 shrink-0">
+          Đăng Nhập Ngay
+        </button>
+      </div>
+    </div>
+
+    <!-- Role-Based Tab Controls -->
+    <div class="flex flex-wrap items-center gap-2 mb-8 bg-white p-2 rounded-2xl border border-slate-200/80 shadow-sm">
+      <button id="tabBtnReception" onclick="switchTab('reception')" class="px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-blue-900 text-white shadow-sm">
+        <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Quầy Lễ Tân (Check-in / Check-out)
+      </button>
+
+      <button id="tabBtnHousekeeping" onclick="switchTab('housekeeping')" class="px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 text-slate-600 hover:text-blue-900 hover:bg-slate-50">
+        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        Bộ Phận Buồng Phòng (Sơ Đồ Phòng)
+      </button>
+
+      <button id="tabBtnAdmin" onclick="switchTab('admin')" class="px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 text-slate-600 hover:text-blue-900 hover:bg-slate-50">
+        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Báo Cáo & Quản Trị (Ban Giám Đốc)
+      </button>
+    </div>
+
+    <!-- ========================================================================== -->
+    <!-- TAB 1: RECEPTION DESK OPERATIONS                                           -->
+    <!-- ========================================================================== -->
+    <div id="tabContentReception" class="space-y-6">
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+        <h3 class="font-serif text-xl font-bold text-slate-900 mb-2">Tra Cứu Đơn Đặt Phòng</h3>
+        <p class="text-xs text-slate-500 mb-5">Nhập mã đơn phòng (ví dụ: <code class="font-bold text-blue-900">DP2026102801</code>) hoặc số CCCD của khách (ví dụ: <code class="font-bold text-blue-900">001202000001</code>)</p>
+
+        <form onsubmit="event.preventDefault(); Reception.searchBooking();" class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-1">
+            <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="receptionSearchInput" placeholder="Nhập Booking ID (DP...) hoặc số CCCD..." class="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          </div>
+          <button type="submit" class="btn-navy text-xs font-bold px-6 py-3 rounded-2xl shrink-0">
+            Tìm Kiếm Đơn
+          </button>
+        </form>
+
+        <!-- Search Result Box -->
+        <div id="receptionSearchResult" class="mt-6">
+          <div class="py-8 text-center text-slate-400 text-xs">
+            Vui lòng nhập thông tin để tra cứu hồ sơ khách hàng.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================== -->
+    <!-- TAB 2: HOUSEKEEPING BOARD                                                  -->
+    <!-- ========================================================================== -->
+    <div id="tabContentHousekeeping" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="font-serif text-xl font-bold text-slate-900">Sơ Đồ Phòng Khách Sạn</h3>
+            <p class="text-xs text-slate-500 mt-1">Giám sát trạng thái vệ sinh buồng phòng và cập nhật thời gian thực</p>
+          </div>
+
+          <!-- Status Filters -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="Housekeeping.loadRooms('')" class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 font-medium">Tất cả</button>
+            <button onclick="Housekeeping.loadRooms('AVAILABLE')" class="text-xs px-3 py-1.5 rounded-lg status-available font-semibold">Sạch (AVAILABLE)</button>
+            <button onclick="Housekeeping.loadRooms('OCCUPIED')" class="text-xs px-3 py-1.5 rounded-lg status-occupied font-semibold">Đang ở (OCCUPIED)</button>
+            <button onclick="Housekeeping.loadRooms('DIRTY')" class="text-xs px-3 py-1.5 rounded-lg status-dirty font-semibold">Bẩn (DIRTY)</button>
+            <button onclick="Housekeeping.loadRooms('MAINTENANCE')" class="text-xs px-3 py-1.5 rounded-lg status-maintenance font-semibold">Bảo trì (MAINTENANCE)</button>
+          </div>
+        </div>
+
+        <!-- Rooms Grid -->
+        <div id="housekeepingRoomsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Populated by Housekeeping.loadRooms() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================== -->
+    <!-- TAB 3: ADMIN & ACCOUNTANT ANALYTICS                                        -->
+    <!-- ========================================================================== -->
+    <div id="tabContentAdmin" class="hidden space-y-8">
+      <!-- Date Range Controls -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-serif text-xl font-bold text-slate-900">Báo Cáo Hiệu Quả Kinh Doanh & RevPAR</h3>
+          <p class="text-xs text-slate-500 mt-1">Thống kê công suất buồng phòng và cơ cấu doanh thu theo kỳ</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-500 font-medium">Từ ngày:</span>
+            <input type="date" id="reportFromDate" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none">
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-500 font-medium">Đến ngày:</span>
+            <input type="date" id="reportToDate" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none">
+          </div>
+          <button onclick="Admin.loadReports()" class="btn-navy text-xs font-bold px-4 py-2 rounded-xl">
+            Lọc Báo Cáo
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Tỷ Lệ Lấp Đầy (Occupancy)</span>
+          <div id="statOccupancyRate" class="text-2xl font-black font-serif text-blue-950">0%</div>
+          <div class="text-[11px] text-slate-400 mt-1">
+            <span id="statOccupiedRooms">0</span> / <span id="statTotalRooms">0</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Chỉ Số RevPAR</span>
+          <div id="statRevPAR" class="text-2xl font-black font-serif text-amber-700">0 ₫</div>
+          <div class="text-[11px] text-slate-400 mt-1">Doanh thu / phòng khả dụng</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Doanh Thu Tiền Phòng</span>
+          <div id="statRoomRevenue" class="text-2xl font-black font-serif text-blue-900">0 ₫</div>
+          <div class="text-[11px] text-slate-400 mt-1">Chiếm tỷ trọng chính</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Tổng Doanh Thu Kỳ</span>
+          <div id="statTotalRevenue" class="text-2xl font-black font-serif text-emerald-700">0 ₫</div>
+          <div class="text-[11px] text-slate-400 mt-1" id="statTotalInvoices">0 hóa đơn</div>
+        </div>
+      </div>
+
+      <!-- Visual Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Donut Chart: Occupancy -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <h4 class="font-bold text-sm text-slate-800 mb-4">Tỷ Lệ Chiếm Chỗ Phòng Khách Sạn</h4>
+          <div class="relative h-64">
+            <canvas id="occupancyChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Bar Chart: Revenue Composition -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm lg:col-span-2 flex flex-col justify-between">
+          <h4 class="font-bold text-sm text-slate-800 mb-4">Cơ Cấu Nguồn Doanh Thu Khách Sạn</h4>
+          <div class="relative h-64">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Room Type Administration -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h4 class="font-serif text-lg font-bold text-slate-900">Quản Lý Danh Mục Hạng Phòng</h4>
+            <p class="text-xs text-slate-500 mt-0.5">Cấu hình giá niêm yết, sức chứa và tiêu chuẩn phòng</p>
+          </div>
+          <button onclick="openModal('createRoomTypeModal')" class="btn-gold text-xs px-4 py-2">
+            + Thêm Hạng Phòng Mới
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="px-6 py-3">Mã Loại</th>
+                <th class="px-6 py-3">Tên Hạng Phòng</th>
+                <th class="px-6 py-3">Giá Cơ Bản</th>
+                <th class="px-6 py-3">Sức Chứa</th>
+                <th class="px-6 py-3">Thông Tin Tiện Nghi</th>
+              </tr>
+            </thead>
+            <tbody id="adminRoomTypesTable">
+              <!-- Populated by Admin.loadAdminRoomTypes() -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================== -->
+  <!-- MODALS FOR STAFF OPERATIONS                                                -->
+  <!-- ========================================================================== -->
+
+  <!-- CHECK-IN MODAL (ROOM ASSIGNMENT) -->
+  <div id="receptionCheckInModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 relative animate-fade-in">
+      <button onclick="closeModal('receptionCheckInModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <input type="hidden" id="checkInBookingId">
+
+      <span class="gold-badge text-xs px-3 py-1 rounded-full font-semibold">Nghiệp Vụ Lễ Tân</span>
+      <h3 class="font-serif text-2xl font-bold text-slate-900 mt-2">Làm Thủ Tục Check-in</h3>
+      <p class="text-xs text-slate-500 mt-1">Gán phòng vật lý sạch cho đơn: <span id="checkInDisplayId" class="font-mono font-bold text-blue-900"></span></p>
+
+      <div class="my-6">
+        <label class="text-xs font-bold text-slate-700 block mb-2">Chọn số phòng sẵn sàng (Sạch - AVAILABLE)</label>
+        <select id="checkInRoomSelect" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+          <!-- Populated dynamically -->
+        </select>
+        <p class="text-[11px] text-slate-400 mt-2">Hệ thống tự động kiểm tra loại phòng hợp lệ và chuyển trạng thái phòng sang OCCUPIED.</p>
+      </div>
+
+      <button type="button" onclick="Reception.submitCheckIn()" class="w-full btn-gold py-3 rounded-xl text-xs font-bold shadow-md">
+        Xác Nhận Check-in & Gán Phòng
+      </button>
+    </div>
+  </div>
+
+  <!-- CHECK-OUT & INVOICE SETTLEMENT MODAL -->
+  <div id="receptionCheckOutModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto animate-fade-in">
+      <button onclick="closeModal('receptionCheckOutModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <input type="hidden" id="checkOutBookingId">
+
+      <span class="gold-badge text-xs px-3 py-1 rounded-full font-semibold">Quyết Toán Hóa Đơn</span>
+      <h3 class="font-serif text-2xl font-bold text-slate-900 mt-2">Làm Thủ Tục Check-out</h3>
+      <p class="text-xs text-slate-500 mt-1">Đơn đặt phòng: <span id="checkOutDisplayId" class="font-mono font-bold text-blue-900"></span></p>
+
+      <!-- Financial Calculation Grid -->
+      <div class="my-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
+        <div class="flex justify-between text-slate-600">
+          <span>Tiền phòng:</span>
+          <span id="summaryRoomCharge" class="font-bold text-slate-800">0 ₫</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>Tiền dịch vụ / Minibar đã dùng:</span>
+          <span id="summaryServiceCharge" class="font-bold text-slate-800">0 ₫</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-600 pt-2 border-t border-slate-200/60">
+          <span>Phụ thu phát sinh:</span>
+          <input type="number" id="checkOutSurcharge" value="0" min="0" step="10000" oninput="Reception.calculateCheckOutSummary()" class="w-32 px-2 py-1 rounded border border-slate-300 text-right font-bold text-xs focus:outline-none">
+        </div>
+        <div class="flex justify-between text-slate-800 font-bold pt-2 border-t border-slate-200">
+          <span>Tổng giá trị hóa đơn:</span>
+          <span id="summaryFinalAmount" class="text-sm font-serif">0 ₫</span>
+        </div>
+
+        <!-- Advance Payment Deduction Highlight -->
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex justify-between items-center text-emerald-800">
+          <span class="font-medium">Đã thanh toán trước (Cọc / VNPay):</span>
+          <span id="summaryDaThanhToan" class="font-bold text-sm">-0 ₫</span>
+        </div>
+
+        <div class="flex justify-between items-center pt-2 border-t border-slate-200 text-base font-black text-rose-700">
+          <span>Số tiền khách CÒN PHẢI TRẢ:</span>
+          <span id="summaryConPhaiTra" class="font-serif text-xl">0 ₫</span>
+        </div>
+      </div>
+
+      <!-- Payment Method for Balance -->
+      <div id="checkOutPayMethodSection" class="mb-6">
+        <label class="text-xs font-bold text-slate-700 block mb-1">Hình thức thanh toán số dư</label>
+        <select id="checkOutPayMethodSelect" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none">
+          <option value="CASH">Tiền mặt tại quầy (CASH)</option>
+          <option value="CREDIT_CARD">Thẻ tín dụng / POS (CREDIT_CARD)</option>
+          <option value="VNPAY">Cổng VNPay QR (VNPAY)</option>
+        </select>
+      </div>
+
+      <button type="button" onclick="Reception.submitCheckOut()" class="w-full btn-gold py-3.5 rounded-xl text-xs font-bold shadow-md">
+        Xác Nhận Thu Đủ Tiền & Hoàn Tất Check-out
+      </button>
+    </div>
+  </div>
+
+  <!-- PRINTABLE INVOICE MODAL -->
+  <div id="invoiceModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in border border-slate-200">
+      <div class="no-print flex justify-between items-center pb-4 mb-4 border-b border-slate-100">
+        <button onclick="Reception.printInvoice()" class="btn-navy text-xs px-4 py-2 flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          In Hóa Đơn Này
+        </button>
+        <button onclick="closeModal('invoiceModal')" class="text-slate-400 hover:text-slate-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Printable Area -->
+      <div id="printableInvoice" class="p-6 bg-white border border-slate-200 rounded-2xl">
+        <div class="flex justify-between items-start pb-6 border-b border-slate-200">
+          <div>
+            <h2 class="font-serif text-2xl font-bold text-blue-950">MELIÁ HÀ NỘI</h2>
+            <p class="text-[11px] text-slate-500">44B Lý Thường Kiệt, Hoàn Kiếm, Hà Nội</p>
+            <p class="text-[11px] text-slate-500">Tel: (+84) 24 3934 3343</p>
+          </div>
+          <div class="text-right">
+            <h3 class="font-mono text-sm font-bold text-slate-800" id="invNumber">HD...</h3>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold uppercase" id="invPayStatus">PAID</span>
+          </div>
+        </div>
+
+        <div class="my-6 text-xs space-y-1">
+          <div class="flex justify-between"><span class="text-slate-500">Mã đơn phòng:</span> <strong id="invBookingId" class="font-mono"></strong></div>
+          <div class="flex justify-between"><span class="text-slate-500">Ngày xuất hóa đơn:</span> <span id="invDate"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Hình thức thanh toán:</span> <span id="invPayMethod" class="font-bold"></span></div>
+        </div>
+
+        <table class="w-full text-xs mb-6 border-t border-b border-slate-200 py-3">
+          <thead>
+            <tr class="text-left text-slate-400 border-b border-slate-100">
+              <th class="py-2">Khoản Mục</th>
+              <th class="py-2 text-right">Số Tiền</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="py-2 text-slate-700">Tiền phòng lưu trú</td>
+              <td class="py-2 text-right font-medium" id="invRoomCharge">0 ₫</td>
+            </tr>
+            <tr>
+              <td class="py-2 text-slate-700">Dịch vụ & Minibar</td>
+              <td class="py-2 text-right font-medium" id="invServiceCharge">0 ₫</td>
+            </tr>
+            <tr>
+              <td class="py-2 text-slate-700">Phụ thu phát sinh</td>
+              <td class="py-2 text-right font-medium" id="invSurcharge">0 ₫</td>
+            </tr>
+            <tr>
+              <td class="py-2 text-emerald-600">Khuyến mại giảm giá</td>
+              <td class="py-2 text-right font-medium text-emerald-600" id="invDiscount">0 ₫</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between text-slate-700">
+            <span>Tổng thanh toán:</span>
+            <span id="invTotalAmount" class="font-bold text-sm">0 ₫</span>
+          </div>
+          <div class="flex justify-between text-slate-500">
+            <span>Đã thanh toán trước:</span>
+            <span id="invPaidAdvance" class="font-medium">0 ₫</span>
+          </div>
+          <div class="flex justify-between text-slate-900 font-bold pt-2 border-t border-slate-200 text-sm">
+            <span>Thực thu tại quầy:</span>
+            <span id="invBalanceDue" class="font-serif text-lg font-black text-amber-700">0 ₫</span>
+          </div>
+        </div>
+
+        <div class="mt-10 text-center text-[10px] text-slate-400">
+          Cảm ơn Quý khách đã lựa chọn Meliá Hà Nội. Hẹn gặp lại Quý khách trong những kỳ nghỉ tiếp theo!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MINIBAR USAGE MODAL -->
+  <div id="minibarModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 relative animate-fade-in">
+      <button onclick="closeModal('minibarModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <input type="hidden" id="minibarRoomId">
+
+      <span class="gold-badge text-xs px-3 py-1 rounded-full font-semibold">Buồng Phòng & Tiêu Dùng</span>
+      <h3 class="font-serif text-2xl font-bold text-slate-900 mt-2">Ghi Nhận Minibar</h3>
+      <p class="text-xs text-slate-500 mt-1">Phòng số: <span id="minibarRoomNumber" class="font-bold text-blue-900"></span></p>
+
+      <div class="my-6 space-y-3.5">
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Mã đơn đặt phòng lưu trú</label>
+          <input type="text" id="minibarBookingId" placeholder="Ví dụ: DP2026102801" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold focus:outline-none">
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Mặt hàng minibar / Dịch vụ</label>
+          <select id="minibarServiceSelect" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none">
+            <option value="DV001">Nước khoáng Evian 500ml (60.000 ₫)</option>
+            <option value="DV002">Bia lon Heineken / Nước ngọt (45.000 ₫)</option>
+            <option value="DV003">Hạt điều sấy / Snack cao cấp (50.000 ₫)</option>
+            <option value="DV004">Rượu vang đỏ Chianti Riserva (650.000 ₫)</option>
+            <option value="DV005">Dịch vụ giặt ủi lấy nhanh 24h (120.000 ₫)</option>
+            <option value="DV006">Massage Spa toàn thân 60p (850.000 ₫)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Số lượng khách đã dùng</label>
+          <input type="number" id="minibarQuantity" value="1" min="1" max="50" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none">
+        </div>
+      </div>
+
+      <button type="button" onclick="Housekeeping.submitMinibarUsage()" class="w-full btn-gold py-3 rounded-xl text-xs font-bold shadow-md">
+        Xác Nhận Ghi Nhận Minibar
+      </button>
+    </div>
+  </div>
+
+  <!-- CREATE ROOM TYPE MODAL -->
+  <div id="createRoomTypeModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto animate-fade-in">
+      <button onclick="closeModal('createRoomTypeModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <span class="gold-badge text-xs px-3 py-1 rounded-full font-semibold">Quản Trị Hệ Thống</span>
+      <h3 class="font-serif text-2xl font-bold text-slate-900 mt-2">Thêm Hạng Phòng Mới</h3>
+      <p class="text-xs text-slate-500 mt-1">Cấu hình thông tin hạng phòng 5 sao đưa vào kinh doanh</p>
+
+      <div class="my-6 space-y-3.5">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Mã loại phòng</label>
+            <input type="text" id="newRoomTypeCode" placeholder="LP05" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs uppercase font-mono font-bold focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Tên hạng phòng</label>
+            <input type="text" id="newRoomTypeName" placeholder="Phòng Royal Suite" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Giá cơ bản (VNĐ/đêm)</label>
+            <input type="number" id="newRoomTypePrice" placeholder="4500000" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Sức chứa tối đa (khách)</label>
+            <input type="number" id="newRoomTypeCapacity" value="2" min="1" max="10" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">URL Hình ảnh minh họa</label>
+          <input type="url" id="newRoomTypeImage" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none">
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Mô tả chi tiết tiện nghi</label>
+          <textarea id="newRoomTypeDescription" rows="3" placeholder="Không gian rộng rãi, trang thiết bị tối tân..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"></textarea>
+        </div>
+      </div>
+
+      <button type="button" onclick="Admin.createRoomType()" class="w-full btn-gold py-3.5 rounded-xl text-xs font-bold shadow-md">
+        Tạo Hạng Phòng Mới
+      </button>
+    </div>
+  </div>
+
+  <!-- STAFF LOGIN MODAL -->
+  <div id="staffLoginModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-100 relative animate-fade-in">
+      <button onclick="closeModal('staffLoginModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-blue-900 text-amber-400 flex items-center justify-center font-serif text-2xl font-bold mx-auto mb-3">M</div>
+        <h3 class="font-serif text-2xl font-bold text-slate-900">Đăng Nhập Nghiệp Vụ</h3>
+        <p class="text-xs text-slate-500 mt-1">Cổng làm việc nội bộ Khách sạn Meliá</p>
+      </div>
+
+      <form onsubmit="
+        event.preventDefault();
+        Auth.login(document.getElementById('staffUsername').value, document.getElementById('staffPassword').value).then(() => {
+          closeModal('staffLoginModal');
+          initAdminPage();
+        });
+      " class="space-y-4">
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Tên đăng nhập nội bộ</label>
+          <input type="text" id="staffUsername" required placeholder="admin / reception01 / housekeeping01" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Mật khẩu</label>
+          <input type="password" id="staffPassword" required placeholder="123456" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-blue-900 focus:outline-none">
+        </div>
+
+        <button type="submit" class="w-full btn-gold py-3 rounded-xl text-sm font-bold shadow-md">
+          Đăng Nhập Làm Việc
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Central JS Modules -->
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/reception.js"></script>
+  <script src="assets/js/housekeeping.js"></script>
+  <script src="assets/js/admin.js"></script>
+
+  <script>
+    // Tab Switching Logic
+    function switchTab(tabId) {
+      const tabs = ['reception', 'housekeeping', 'admin'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (t === tabId) {
+          btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-blue-900 text-white shadow-sm';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 text-slate-600 hover:text-blue-900 hover:bg-slate-50';
+          content.classList.add('hidden');
+        }
+      });
+
+      if (tabId === 'housekeeping') {
+        Housekeeping.loadRooms();
+      } else if (tabId === 'admin') {
+        Admin.loadReports();
+      }
+    }
+
+    function initAdminPage() {
+      const user = Auth.getUser();
+      const staffHeaderProfile = document.getElementById('staffHeaderProfile');
+      const unauthAlert = document.getElementById('unauthAlert');
+
+      if (!Auth.isStaff()) {
+        unauthAlert.classList.remove('hidden');
+        staffHeaderProfile.innerHTML = `
+          <button onclick="openModal('staffLoginModal')" class="text-xs px-3 py-1.5 rounded-lg bg-amber-400 text-blue-950 font-bold hover:bg-amber-300">
+            Đăng nhập NV
+          </button>
+        `;
+      } else {
+        unauthAlert.classList.add('hidden');
+        staffHeaderProfile.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-amber-400 text-blue-950 font-bold flex items-center justify-center text-xs shadow-inner">
+              ${user.fullName ? user.fullName.charAt(0).toUpperCase() : 'N'}
+            </div>
+            <div class="text-left hidden sm:block">
+              <div class="text-xs font-bold text-white">${user.fullName}</div>
+              <div class="text-[10px] text-amber-300 font-semibold">${Auth.getRoleBadgeText(user.role)}</div>
+            </div>
+            <button onclick="Auth.logout()" title="Đăng xuất" class="p-1.5 text-blue-300 hover:text-rose-400 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
+          </div>
+        `;
+
+        // Switch initial tab based on role
+        if (Auth.isHousekeeping() && !Auth.isAdmin()) {
+          switchTab('housekeeping');
+        } else if (Auth.isAccountant() && !Auth.isAdmin()) {
+          switchTab('admin');
+        } else {
+          switchTab('reception');
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initAdminPage();
+      Admin.init();
+    });
+  </script>
+</body>
+</html>
