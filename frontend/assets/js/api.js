@@ -51,6 +51,17 @@ function formatVND(amount) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
 }
 
+// Format Date object to YYYY-MM-DD (local calendar date, avoiding UTC rollback bug)
+function formatLocalDate(d = new Date()) {
+  if (!d) return '';
+  const dateObj = (d instanceof Date) ? d : new Date(d);
+  if (isNaN(dateObj.getTime())) return '';
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Format date string YYYY-MM-DD to DD/MM/YYYY
 function formatDate(dateStr) {
   if (!dateStr) return '';

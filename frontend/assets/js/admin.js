@@ -8,19 +8,17 @@ const Admin = {
   revenueChartInstance: null,
 
   init() {
-    // Default date range: current month
+    // Default date range: current month using local calendar date
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-    const formatDateVal = (d) => d.toISOString().split('T')[0];
 
     const fromInput = document.getElementById('reportFromDate');
     const toInput = document.getElementById('reportToDate');
 
     if (fromInput && toInput) {
-      fromInput.value = formatDateVal(firstDay);
-      toInput.value = formatDateVal(lastDay);
+      fromInput.value = formatLocalDate(firstDay);
+      toInput.value = formatLocalDate(lastDay);
     }
 
     this.loadOccupancyReport();

@@ -15,30 +15,33 @@ const Guest = {
   appliedCouponCode: '',
 
   init() {
-    // Set default check-in (today) and check-out (tomorrow)
+    // Set default check-in (today) and check-out (tomorrow) using local calendar date
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
-
-    const formatDateVal = (d) => d.toISOString().split('T')[0];
 
     const checkInInput = document.getElementById('searchCheckIn');
     const checkOutInput = document.getElementById('searchCheckOut');
     const guestsInput = document.getElementById('searchGuests');
 
     if (checkInInput && checkOutInput) {
-      checkInInput.min = formatDateVal(today);
-      checkInInput.value = formatDateVal(today);
+      const todayStr = formatLocalDate(today);
+      const tomorrowStr = formatLocalDate(tomorrow);
 
-      checkOutInput.min = formatDateVal(tomorrow);
-      checkOutInput.value = formatDateVal(tomorrow);
+      checkInInput.min = todayStr;
+      checkInInput.value = todayStr;
+
+      checkOutInput.min = tomorrowStr;
+      checkOutInput.value = tomorrowStr;
 
       checkInInput.addEventListener('change', () => {
-        const nextDay = new Date(checkInInput.value);
-        nextDay.setDate(nextDay.getDate() + 1);
-        checkOutInput.min = formatDateVal(nextDay);
+        if (!checkInInput.value) return;
+        const [y, m, d] = checkInInput.value.split('-').map(Number);
+        const nextDay = new Date(y, m - 1, d + 1);
+        const nextDayStr = formatLocalDate(nextDay);
+        checkOutInput.min = nextDayStr;
         if (checkOutInput.value <= checkInInput.value) {
-          checkOutInput.value = formatDateVal(nextDay);
+          checkOutInput.value = nextDayStr;
         }
       });
     }
@@ -50,9 +53,33 @@ const Guest = {
 
   // Search rooms with live availability
   async searchAvailableRooms() {
-    const checkIn = document.getElementById('searchCheckIn')?.value;
-    const checkOut = document.getElementById('searchCheckOut')?.value;
+    const checkInInput = document.getElementById('searchCheckIn');
+    const checkOutInput = document.getElementById('searchCheckOut');
+    let checkIn = checkInInput?.value;
+    let checkOut = checkOutInput?.value;
     const guests = document.getElementById('searchGuests')?.value || 2;
+
+    const todayStr = formatLocalDate(new Date());
+
+    // Defensive check: If checkIn is empty or in the past, reset to today!
+    if (!checkIn || checkIn < todayStr) {
+      checkIn = todayStr;
+      if (checkInInput) {
+        checkInInput.value = todayStr;
+        checkInInput.min = todayStr;
+      }
+    }
+
+    // Defensive check: If checkOut is empty or <= checkIn, reset to next day!
+    if (!checkOut || checkOut <= checkIn) {
+      const [y, m, d] = checkIn.split('-').map(Number);
+      const nextDay = new Date(y, m - 1, d + 1);
+      checkOut = formatLocalDate(nextDay);
+      if (checkOutInput) {
+        checkOutInput.value = checkOut;
+        checkOutInput.min = checkOut;
+      }
+    }
 
     this.currentRoomSearch = { checkIn, checkOut, guests };
 
@@ -86,6 +113,23 @@ const Guest = {
         })));
       }
     } catch (error) {
+      console.warn('Live availability error, falling back to all room types:', error);
+      try {
+        const allTypes = await apiRequest('/api/v1/rooms/types');
+        if (allTypes && allTypes.data) {
+          this.renderRoomList(allTypes.data.map(t => ({
+            roomTypeId: t.maLoaiPhong,
+            roomTypeName: t.tenLoaiPhong,
+            basePrice: t.giaPhongCoBan,
+            capacity: t.sucChua,
+            description: t.moTa || t.thongTin,
+            imageUrl: t.hinhAnhMinhHoa,
+            availableRoomsCount: 2
+          })));
+          return;
+        }
+      } catch (e) {}
+
       container.innerHTML = `
         <div class="col-span-full py-12 text-center bg-rose-50 rounded-2xl border border-rose-200 p-8">
           <p class="text-rose-700 font-semibold mb-2">Không thể tải thông tin phòng: ${error.message}</p>
