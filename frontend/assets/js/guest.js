@@ -300,7 +300,8 @@ const Guest = {
         if (paymentMethod === 'VNPAY') {
           // Trigger VNPay Payment URL
           try {
-            const payUrlRes = await apiRequest(`/api/v1/payments/create-url?bookingId=${booking.bookingId}`, {
+            const bookingId = booking.bookingId || booking.maDatPhong;
+            const payUrlRes = await apiRequest(`/api/v1/payments/create-url?bookingId=${bookingId}`, {
               method: 'POST'
             });
 
@@ -334,8 +335,11 @@ const Guest = {
       return;
     }
 
-    document.getElementById('vnpayBookingId').innerText = booking.bookingId;
-    document.getElementById('vnpayAmount').innerText = formatVND(booking.totalAmount);
+    const bookingId = booking.bookingId || booking.maDatPhong;
+    const totalAmount = booking.totalAmount !== undefined ? booking.totalAmount : (booking.tongTien !== undefined ? booking.tongTien : 0);
+
+    document.getElementById('vnpayBookingId').innerText = bookingId;
+    document.getElementById('vnpayAmount').innerText = formatVND(totalAmount);
     
     // Bind VNPay success callback simulator
     const confirmPayBtn = document.getElementById('btnSimulateVNPaySuccess');
@@ -344,7 +348,7 @@ const Guest = {
       confirmPayBtn.innerText = 'Đang xử lý giao dịch...';
       try {
         // Call backend VNPay Callback API
-        await apiRequest(`/api/v1/payments/vnpay-callback?vnp_ResponseCode=00&vnp_TxnRef=${booking.bookingId}&vnp_Amount=${booking.totalAmount * 100}&vnp_TransactionNo=${Date.now()}`);
+        await apiRequest(`/api/v1/payments/vnpay-callback?vnp_ResponseCode=00&vnp_TxnRef=${bookingId}&vnp_Amount=${Math.round(totalAmount * 100)}&vnp_TransactionNo=${Date.now()}`);
         showToast('Thanh toán VNPay thành công 100%! Đơn phòng đã được xác nhận.', 'success');
         closeModal('vnpayModal');
         this.showBookingSuccess(booking, true);
@@ -360,15 +364,48 @@ const Guest = {
 
   // Booking Success Modal with QR Code
   showBookingSuccess(booking, isPaid = false) {
-    document.getElementById('successBookingId').innerText = booking.bookingId;
-    document.getElementById('successRoomType').innerText = booking.roomTypeName;
-    document.getElementById('successDates').innerText = `${formatDate(booking.checkInDate)} ➔ ${formatDate(booking.checkOutDate)}`;
-    document.getElementById('successTotal').innerText = formatVND(booking.totalAmount);
-    document.getElementById('successStatus').innerText = isPaid ? 'ĐÃ XÁC NHẬN & ĐÃ THANH TOÁN (CONFIRMED)' : (booking.status || 'ĐANG GIỮ CHỖ (PENDING)');
+    const bookingId = booking.bookingId || booking.maDatPhong || '';
+    const roomTypeName = booking.roomTypeName || booking.tenLoaiPhong || 'Hạng phòng 5 sao';
+    const checkIn = booking.checkInDate || booking.thoiGianNhanPhong || '';
+    const checkOut = booking.checkOutDate || booking.thoiGianTraPhong || '';
+    const total = booking.totalAmount !== undefined ? booking.totalAmount : (booking.tongTien !== undefined ? booking.tongTien : 0);
+    const status = isPaid ? 'CONFIRMED' : (booking.status || booking.trangThaiDon || 'PENDING');
+    const qr = booking.qrCodeBase64 || booking.qrCode;
+
+    const bIdEl = document.getElementById('successBookingId');
+    if (bIdEl) bIdEl.innerText = bookingId;
+
+    const rtEl = document.getElementById('successRoomType');
+    if (rtEl) rtEl.innerText = roomTypeName;
+
+    const datesEl = document.getElementById('successDates');
+    if (datesEl) {
+      datesEl.innerText = (checkIn && checkOut) ? `${formatDate(checkIn)} ➔ ${formatDate(checkOut)}` : 'Đang cập nhật';
+    }
+
+    const totalEl = document.getElementById('successTotal');
+    if (totalEl) totalEl.innerText = formatVND(total);
+
+    const statusEl = document.getElementById('successStatus');
+    if (statusEl) {
+      if (status === 'CONFIRMED') {
+        statusEl.innerText = 'ĐÃ XÁC NHẬN (CONFIRMED)';
+        statusEl.className = 'text-emerald-700 font-bold';
+      } else if (status === 'CHECKED_IN') {
+        statusEl.innerText = 'ĐÃ NHẬN PHÒNG (CHECKED_IN)';
+        statusEl.className = 'text-blue-700 font-bold';
+      } else if (status === 'CHECKED_OUT') {
+        statusEl.innerText = 'ĐÃ TRẢ PHÒNG (CHECKED_OUT)';
+        statusEl.className = 'text-purple-700 font-bold';
+      } else {
+        statusEl.innerText = 'ĐANG GIỮ CHỖ (PENDING)';
+        statusEl.className = 'text-amber-700 font-bold';
+      }
+    }
 
     const qrImg = document.getElementById('successQrCodeImg');
     if (qrImg) {
-      qrImg.src = booking.qrCodeBase64 || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+      qrImg.src = qr || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
     }
 
     openModal('bookingSuccessModal');
@@ -397,37 +434,55 @@ const Guest = {
       const response = await apiRequest(`/api/v1/bookings/customer/${user.userId}`);
       if (response && response.data && response.data.length > 0) {
         container.innerHTML = response.data.map(b => {
-          const canReview = b.status === 'CHECKED_OUT';
+          const bookingId = b.bookingId || b.maDatPhong || '';
+          const status = b.status || b.trangThaiDon || 'PENDING';
+          const roomTypeName = b.roomTypeName || b.tenLoaiPhong || 'Hạng phòng 5 sao';
+          const checkIn = b.checkInDate || b.thoiGianNhanPhong;
+          const checkOut = b.checkOutDate || b.thoiGianTraPhong;
+          const totalAmount = b.totalAmount !== undefined ? b.totalAmount : (b.tongTien !== undefined ? b.tongTien : 0);
+          const canReview = status === 'CHECKED_OUT';
+
+          let statusBadgeClass = 'bg-amber-100 text-amber-800';
+          let statusText = 'Đang giữ chỗ';
+          if (status === 'CONFIRMED') {
+            statusBadgeClass = 'bg-emerald-100 text-emerald-800';
+            statusText = 'Đã xác nhận';
+          } else if (status === 'CHECKED_IN') {
+            statusBadgeClass = 'bg-blue-100 text-blue-800';
+            statusText = 'Đang lưu trú';
+          } else if (status === 'CHECKED_OUT') {
+            statusBadgeClass = 'bg-purple-100 text-purple-800';
+            statusText = 'Đã trả phòng';
+          } else if (status === 'CANCELLED') {
+            statusBadgeClass = 'bg-rose-100 text-rose-800';
+            statusText = 'Đã hủy';
+          }
+
           return `
             <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-amber-400 transition-colors">
               <div>
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="font-mono text-sm font-bold text-blue-950">${b.bookingId}</span>
-                  <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-                    b.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
-                    b.status === 'CHECKED_IN' ? 'bg-blue-100 text-blue-800' :
-                    b.status === 'CHECKED_OUT' ? 'bg-purple-100 text-purple-800' :
-                    'bg-amber-100 text-amber-800'
-                  }">
-                    ${b.status}
+                  <span class="font-mono text-sm font-bold text-blue-950">${bookingId}</span>
+                  <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${statusBadgeClass}">
+                    ${statusText} (${status})
                   </span>
                 </div>
-                <div class="text-sm font-semibold text-slate-800">${b.roomTypeName || 'Hạng phòng 5 sao'}</div>
+                <div class="text-sm font-semibold text-slate-800">${roomTypeName}</div>
                 <div class="text-xs text-slate-500 mt-0.5">
-                  Lưu trú: ${formatDate(b.checkInDate)} ➔ ${formatDate(b.checkOutDate)}
+                  Lưu trú: ${formatDate(checkIn)} ➔ ${formatDate(checkOut)}
                 </div>
-                <div class="text-sm font-bold text-amber-700 font-serif mt-1">
-                  Tổng tiền: ${formatVND(b.totalAmount)}
+                <div class="text-sm font-semibold text-slate-700 mt-1">
+                  Tổng tiền: <span class="font-bold text-amber-700 text-base font-sans">${formatVND(totalAmount)}</span>
                 </div>
               </div>
 
               <div class="flex items-center gap-2 shrink-0">
-                <button onclick="Guest.viewBookingDetails('${b.bookingId}')" class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                <button onclick="Guest.viewBookingDetails('${bookingId}')" class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1 font-medium transition-colors">
+                  <svg class="w-3.5 h-3.5 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
                   Xem Mã QR
                 </button>
                 ${canReview ? `
-                  <button onclick="Guest.openReviewModal('${b.bookingId}')" class="btn-gold text-xs px-3 py-1.5">
+                  <button onclick="Guest.openReviewModal('${bookingId}')" class="btn-gold text-xs px-3 py-1.5 font-medium">
                     Đánh giá dịch vụ
                   </button>
                 ` : ''}

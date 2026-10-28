@@ -127,4 +127,27 @@ public class BookingResponse {
     public void setSoPhong(String soPhong) { this.soPhong = soPhong; }
     public String getQrCode() { return qrCode; }
     public void setQrCode(String qrCode) { this.qrCode = qrCode; }
+
+    // JSON Aliases for Frontend compatibility
+    public String getBookingId() { return maDatPhong; }
+    public LocalDateTime getBookingDate() { return ngayDat; }
+    public LocalDate getCheckInDate() { return thoiGianNhanPhong; }
+    public LocalDate getCheckOutDate() { return thoiGianTraPhong; }
+    public Long getNights() { return soDem; }
+    public String getRoomTypeId() { return maLoaiPhong; }
+    public String getRoomTypeName() { return tenLoaiPhong; }
+    public BigDecimal getTotalAmount() { return tongTien; }
+    public String getStatus() { return trangThaiDon; }
+    public String getSpecialRequests() { return yeuCauDb; }
+    public String getCustomerId() { return maKhachHang; }
+    public String getCustomerName() { return tenKhachHang; }
+    public String getGuestName() { return tenKhachHang; }
+    public String getCustomerPhone() { return soDienThoaiKhachHang; }
+    public String getGuestPhone() { return soDienThoaiKhachHang; }
+    public String getCustomerEmail() { return emailKhachHang; }
+    public String getGuestEmail() { return emailKhachHang; }
+    public String getCouponCode() { return maPhieuGg; }
+    public String getRoomId() { return maPhong; }
+    public String getAssignedRoomNumber() { return soPhong; }
+    public String getQrCodeBase64() { return qrCode; }
 }

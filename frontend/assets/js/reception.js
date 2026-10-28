@@ -44,39 +44,53 @@ const Reception = {
     const container = document.getElementById('receptionSearchResult');
     if (!container) return;
 
-    const isConfirmed = b.status === 'CONFIRMED';
-    const isCheckedIn = b.status === 'CHECKED_IN';
-    const isCheckedOut = b.status === 'CHECKED_OUT';
+    const bookingId = b.bookingId || b.maDatPhong;
+    const status = b.status || b.trangThaiDon || 'PENDING';
+    const isConfirmed = status === 'CONFIRMED';
+    const isCheckedIn = status === 'CHECKED_IN';
+    const isCheckedOut = status === 'CHECKED_OUT';
+    const roomTypeId = b.roomTypeId || b.maLoaiPhong || '';
+    const roomTypeName = b.roomTypeName || b.tenLoaiPhong || 'Hạng phòng 5 sao';
+    const checkInDate = b.checkInDate || b.thoiGianNhanPhong;
+    const checkOutDate = b.checkOutDate || b.thoiGianTraPhong;
+    const totalAmount = b.totalAmount !== undefined ? b.totalAmount : (b.tongTien !== undefined ? b.tongTien : 0);
+    const bookingDate = b.bookingDate || b.ngayDat;
+    const customerName = b.customerName || b.guestName || b.tenKhachHang || 'Khách vãng lai';
+    const customerPhone = b.customerPhone || b.guestPhone || b.soDienThoaiKhachHang || 'N/A';
+    const customerCccd = b.customerCccd || 'N/A';
+    const assignedRoomNumber = b.assignedRoomNumber || b.soPhong;
+    const couponCode = b.couponCode || b.maPhieuGg;
+    const specialRequests = b.specialRequests || b.yeuCauDb;
 
     container.innerHTML = `
       <div class="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-md">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 border-b border-slate-100 gap-4">
           <div>
             <div class="flex items-center gap-3">
-              <h3 class="font-mono text-lg font-bold text-blue-950">${b.bookingId}</h3>
+              <h3 class="font-mono text-lg font-bold text-blue-950">${bookingId}</h3>
               <span class="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
-                b.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
-                b.status === 'CHECKED_IN' ? 'bg-blue-100 text-blue-800' :
-                b.status === 'CHECKED_OUT' ? 'bg-purple-100 text-purple-800' :
+                isConfirmed ? 'bg-emerald-100 text-emerald-800' :
+                isCheckedIn ? 'bg-blue-100 text-blue-800' :
+                isCheckedOut ? 'bg-purple-100 text-purple-800' :
                 'bg-amber-100 text-amber-800'
               }">
-                ${b.status}
+                ${status}
               </span>
             </div>
-            <p class="text-xs text-slate-400 mt-1">Ngày tạo đơn: ${formatDateTime(b.bookingDate)}</p>
+            <p class="text-xs text-slate-400 mt-1">Ngày tạo đơn: ${formatDateTime(bookingDate)}</p>
           </div>
 
           <!-- Actions -->
           <div class="flex items-center gap-3">
             ${isConfirmed ? `
-              <button onclick="Reception.openCheckInModal('${b.bookingId}', '${b.roomTypeId || ''}')" class="btn-gold text-xs px-4 py-2.5">
+              <button onclick="Reception.openCheckInModal('${bookingId}', '${roomTypeId}')" class="btn-gold text-xs px-4 py-2.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                 Làm thủ tục Check-in
               </button>
             ` : ''}
 
             ${isCheckedIn ? `
-              <button onclick="Reception.openCheckOutModal('${b.bookingId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-full shadow-md flex items-center gap-1.5 transition-all">
+              <button onclick="Reception.openCheckOutModal('${bookingId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-full shadow-md flex items-center gap-1.5 transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                 Làm thủ tục Check-out & Quyết toán
               </button>
@@ -92,28 +106,28 @@ const Reception = {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-5">
           <div class="space-y-2">
             <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block">Khách Hàng</span>
-            <div class="text-sm font-bold text-slate-800">${b.customerName || 'Khách vãng lai'}</div>
-            <div class="text-xs text-slate-600">SĐT: ${b.customerPhone || 'N/A'}</div>
-            <div class="text-xs text-slate-600">Số CCCD: <span class="font-mono font-medium">${b.customerCccd || 'N/A'}</span></div>
+            <div class="text-sm font-bold text-slate-800">${customerName}</div>
+            <div class="text-xs text-slate-600">SĐT: ${customerPhone}</div>
+            <div class="text-xs text-slate-600">Số CCCD: <span class="font-mono font-medium">${customerCccd}</span></div>
           </div>
 
           <div class="space-y-2">
             <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block">Lưu Trú & Phòng</span>
-            <div class="text-sm font-bold text-slate-800">${b.roomTypeName || 'Hạng phòng 5 sao'}</div>
-            <div class="text-xs text-slate-600">Nhận: <span class="font-medium">${formatDate(b.checkInDate)}</span></div>
-            <div class="text-xs text-slate-600">Trả: <span class="font-medium">${formatDate(b.checkOutDate)}</span></div>
-            ${b.assignedRoomNumber ? `
+            <div class="text-sm font-bold text-slate-800">${roomTypeName}</div>
+            <div class="text-xs text-slate-600">Nhận: <span class="font-medium">${formatDate(checkInDate)}</span></div>
+            <div class="text-xs text-slate-600">Trả: <span class="font-medium">${formatDate(checkOutDate)}</span></div>
+            ${assignedRoomNumber ? `
               <div class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded w-fit">
-                Phòng đã gán: Số ${b.assignedRoomNumber}
+                Phòng đã gán: Số ${assignedRoomNumber}
               </div>
             ` : '<div class="text-xs text-amber-600 italic">Chưa gán phòng cụ thể</div>'}
           </div>
 
           <div class="space-y-2">
             <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block">Tài Chính & Ghi Chú</span>
-            <div class="text-lg font-bold font-serif text-blue-950">${formatVND(b.totalAmount)}</div>
-            ${b.couponCode ? `<div class="text-xs text-amber-700">Voucher: <span class="font-mono">${b.couponCode}</span></div>` : ''}
-            <div class="text-xs text-slate-500 italic">Yêu cầu: ${b.specialRequests || 'Không có yêu cầu đặc biệt'}</div>
+            <div class="text-lg font-bold font-sans text-blue-950">${formatVND(totalAmount)}</div>
+            ${couponCode ? `<div class="text-xs text-amber-700">Voucher: <span class="font-mono">${couponCode}</span></div>` : ''}
+            <div class="text-xs text-slate-500 italic">Yêu cầu: ${specialRequests || 'Không có yêu cầu đặc biệt'}</div>
           </div>
         </div>
       </div>

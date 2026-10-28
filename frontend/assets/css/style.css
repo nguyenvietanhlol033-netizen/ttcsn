@@ -6,7 +6,7 @@
    Typography: Playfair Display (Serif Headlines) + Inter (Sans-serif Body)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&subset=vietnamese&display=swap');
 
 :root {
   --color-primary-navy: #1E3A8A;
