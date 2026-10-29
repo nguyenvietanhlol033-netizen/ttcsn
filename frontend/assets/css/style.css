@@ -3,10 +3,10 @@
    Product Type: Hotel / Hospitality 5-Star
    Style: Liquid Glass + Swiss Minimalism & Glassmorphism
    Colors: Luxury Navy (#1E3A8A, #0F172A), Gold (#D4AF37, #B45309), Off-White (#F8FAFC)
-   Typography: Playfair Display (Serif Headlines) + Inter (Sans-serif Body)
+   Typography: Lora (Luxury Serif Headlines) + Inter (Sans-serif Body)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&subset=vietnamese&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600;1,700&display=swap');
 
 :root {
   --color-primary-navy: #1E3A8A;
@@ -30,7 +30,10 @@ body {
 }
 
 .font-serif {
-  font-family: 'Lora', 'Playfair Display', Georgia, serif;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif !important;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 /* Glassmorphism & Liquid Glass Surfaces */
@@ -77,9 +80,11 @@ body {
 }
 
 .gold-gradient-text {
-  background: linear-gradient(135deg, #D4AF37 0%, #9A3412 100%);
+  background: linear-gradient(135deg, #F59E0B 0%, #D4AF37 50%, #B45309 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .navy-gradient-bg {
