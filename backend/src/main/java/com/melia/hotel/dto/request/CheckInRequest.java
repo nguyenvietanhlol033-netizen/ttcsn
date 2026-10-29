@@ -7,8 +7,7 @@ public class CheckInRequest {
     @NotBlank(message = "Mã đặt phòng không được để trống")
     private String maDatPhong;
 
-    @NotBlank(message = "Mã phòng vật lý cụ thể không được để trống")
-    private String maPhongCuThe;
+    private String maPhongCuThe; // Tùy chọn nếu đơn đã được lễ tân gán phòng trước đó ở bước Xác nhận
 
     private String maNhanVien; // Tùy chọn, hệ thống tự động trích xuất từ JWT Token của nhân viên đăng nhập
 

@@ -17,6 +17,8 @@ public interface BookingRepository extends JpaRepository<DonDatPhong, String> {
     List<DonDatPhong> findByKhachHang(KhachHang khachHang);
     List<DonDatPhong> findByKhachHang_MaKhachHang(String maKhachHang);
     List<DonDatPhong> findByTrangThaiDon(String trangThaiDon);
+    List<DonDatPhong> findAllByOrderByNgayDatDesc();
+    List<DonDatPhong> findByTrangThaiDonOrderByNgayDatDesc(String trangThaiDon);
     
     @Query("""
         SELECT COUNT(d) FROM DonDatPhong d 

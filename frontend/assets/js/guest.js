@@ -515,6 +515,13 @@ const Guest = {
                 <div class="text-xs text-slate-500 mt-0.5">
                   Lưu trú: ${formatDate(checkIn)} ➔ ${formatDate(checkOut)}
                 </div>
+                ${(b.assignedRoomNumber || b.soPhong) ? `
+                  <div class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded w-fit mt-1">
+                    Phòng đã gán: Số ${b.assignedRoomNumber || b.soPhong}
+                  </div>
+                ` : `
+                  <div class="text-[11px] text-amber-600 mt-0.5 italic">Chờ Lễ tân tiếp nhận & gán số phòng cụ thể</div>
+                `}
                 <div class="text-sm font-semibold text-slate-700 mt-1">
                   Tổng tiền: <span class="font-bold text-amber-700 text-base font-sans">${formatVND(totalAmount)}</span>
                 </div>

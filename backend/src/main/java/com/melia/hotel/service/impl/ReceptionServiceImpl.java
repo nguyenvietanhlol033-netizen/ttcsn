@@ -1,11 +1,13 @@
 package com.melia.hotel.service.impl;
 
+import com.melia.hotel.dto.request.ConfirmAndAssignRoomRequest;
 import com.melia.hotel.dto.response.BookingResponse;
 import com.melia.hotel.dto.response.InvoiceResponse;
 import com.melia.hotel.entity.*;
 import com.melia.hotel.exception.BusinessException;
 import com.melia.hotel.repository.*;
 import com.melia.hotel.service.ReceptionService;
+import com.melia.hotel.util.QRCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReceptionServiceImpl implements ReceptionService {
@@ -27,19 +30,120 @@ public class ReceptionServiceImpl implements ReceptionService {
     private final ChiTietDichVuRepository chiTietDichVuRepo;
     private final NhanVienRepository nhanVienRepo;
     private final HoaDonRepository hoaDonRepo;
+    private final QRCodeUtil qrCodeUtil;
 
     public ReceptionServiceImpl(BookingRepository bookingRepo,
                                 RoomRepository phongRepo,
                                 ChiTietDatPhongRepository chiTietDatPhongRepo,
                                 ChiTietDichVuRepository chiTietDichVuRepo,
                                 NhanVienRepository nhanVienRepo,
-                                HoaDonRepository hoaDonRepo) {
+                                HoaDonRepository hoaDonRepo,
+                                QRCodeUtil qrCodeUtil) {
         this.bookingRepo = bookingRepo;
         this.phongRepo = phongRepo;
         this.chiTietDatPhongRepo = chiTietDatPhongRepo;
         this.chiTietDichVuRepo = chiTietDichVuRepo;
         this.nhanVienRepo = nhanVienRepo;
         this.hoaDonRepo = hoaDonRepo;
+        this.qrCodeUtil = qrCodeUtil;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getAllBookings(String status, String keyword) {
+        List<DonDatPhong> bookings;
+        if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
+            bookings = bookingRepo.findByTrangThaiDonOrderByNgayDatDesc(status.toUpperCase());
+        } else {
+            bookings = bookingRepo.findAllByOrderByNgayDatDesc();
+        }
+
+        if (keyword != null && !keyword.isBlank()) {
+            String kw = keyword.trim().toLowerCase();
+            bookings = bookings.stream()
+                    .filter(b -> (b.getMaDatPhong() != null && b.getMaDatPhong().toLowerCase().contains(kw))
+                            || (b.getKhachHang() != null && b.getKhachHang().getHoTen() != null && b.getKhachHang().getHoTen().toLowerCase().contains(kw))
+                            || (b.getKhachHang() != null && b.getKhachHang().getSoDienThoai() != null && b.getKhachHang().getSoDienThoai().contains(kw))
+                            || (b.getKhachHang() != null && b.getKhachHang().getSoCccd() != null && b.getKhachHang().getSoCccd().contains(kw)))
+                    .collect(Collectors.toList());
+        }
+
+        return bookings.stream().map(this::mapToBookingResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public BookingResponse confirmAndAssignRoom(ConfirmAndAssignRoomRequest request, String maNhanVien) {
+        DonDatPhong booking = bookingRepo.findById(request.getMaDatPhong())
+                .orElseThrow(() -> new BusinessException("Đơn đặt phòng không tồn tại: " + request.getMaDatPhong()));
+
+        if (!"PENDING".equalsIgnoreCase(booking.getTrangThaiDon()) && !"CONFIRMED".equalsIgnoreCase(booking.getTrangThaiDon())) {
+            throw new BusinessException("Chỉ có thể xác nhận & gán phòng cho đơn ở trạng thái PENDING hoặc CONFIRMED (Hiện tại: " + booking.getTrangThaiDon() + ")");
+        }
+
+        Phong room = phongRepo.findById(request.getMaPhongCuThe())
+                .orElseThrow(() -> new BusinessException("Phòng vật lý không tồn tại: " + request.getMaPhongCuThe()));
+
+        // Kiểm tra loại phòng phải khớp chính xác loại phòng khách đặt (VD: Khách đặt Phòng Tổng Thống LP04 thì chỉ được gán phòng LP04)
+        if (booking.getLoaiPhong() != null && !room.getLoaiPhong().getMaLoaiPhong().equals(booking.getLoaiPhong().getMaLoaiPhong())) {
+            throw new BusinessException("Phòng gán (" + room.getSoPhong() + " - " + room.getLoaiPhong().getTenLoaiPhong()
+                    + ") không khớp với loại phòng khách đã đặt (" + booking.getLoaiPhong().getTenLoaiPhong() + ")!");
+        }
+
+        // Kiểm tra trạng thái phòng phải là AVAILABLE
+        if (!"AVAILABLE".equalsIgnoreCase(room.getTrangThaiPhong())) {
+            throw new BusinessException("Phòng " + room.getSoPhong() + " hiện không ở trạng thái sẵn sàng để gán (Trạng thái: " + room.getTrangThaiPhong() + ")!");
+        }
+
+        // Lưu hoặc cập nhật chi tiết đặt phòng
+        List<ChiTietDatPhong> existingCtdp = chiTietDatPhongRepo.findByDonDatPhong(booking);
+        if (existingCtdp != null && !existingCtdp.isEmpty()) {
+            chiTietDatPhongRepo.deleteAll(existingCtdp);
+        }
+        ChiTietDatPhong ctdp = new ChiTietDatPhong(booking, room, room.getSoPhong());
+        chiTietDatPhongRepo.save(ctdp);
+
+        // Chuyển trạng thái đơn thành CONFIRMED
+        booking.setTrangThaiDon("CONFIRMED");
+
+        // Gán nhân viên tiếp nhận
+        if (maNhanVien != null && !maNhanVien.isBlank()) {
+            nhanVienRepo.findById(maNhanVien).ifPresent(booking::setNhanVien);
+        }
+
+        // Sinh QR Code nếu chưa có
+        if (booking.getQrCode() == null || booking.getQrCode().isBlank()) {
+            try {
+                String qrBase64 = qrCodeUtil.generateQRCodeImageBase64("MELIA-CHECKIN-" + booking.getMaDatPhong());
+                booking.setQrCode(qrBase64);
+            } catch (Exception e) {
+                log.warn("Không thể sinh QR Code cho đơn {}: {}", booking.getMaDatPhong(), e.getMessage());
+            }
+        }
+
+        // Xử lý tiền cọc / thanh toán nếu có
+        if (request.getTienCoc() != null && request.getTienCoc().compareTo(BigDecimal.ZERO) > 0) {
+            hoaDonRepo.findByDonDatPhong(booking).ifPresent(hoaDon -> {
+                BigDecimal currentPaid = hoaDon.getDaThanhToan() != null ? hoaDon.getDaThanhToan() : BigDecimal.ZERO;
+                hoaDon.setDaThanhToan(currentPaid.add(request.getTienCoc()));
+                if (hoaDon.getDaThanhToan().compareTo(hoaDon.getTongTienThanhToan()) >= 0) {
+                    hoaDon.setTrangThaiThanhToan("PAID");
+                } else {
+                    hoaDon.setTrangThaiThanhToan("DEPOSITED");
+                }
+                hoaDonRepo.save(hoaDon);
+            });
+        }
+
+        if (request.getGhiChu() != null && !request.getGhiChu().isBlank()) {
+            String currentYc = booking.getYeuCauDb() != null ? booking.getYeuCauDb() + " | " : "";
+            booking.setYeuCauDb(currentYc + "[Lễ tân ghi chú]: " + request.getGhiChu());
+        }
+
+        bookingRepo.save(booking);
+        log.info("Lễ tân {} đã xác nhận & gán phòng {} cho đơn {}", maNhanVien, room.getSoPhong(), booking.getMaDatPhong());
+
+        return mapToBookingResponse(booking);
     }
 
     @Override
@@ -48,30 +152,47 @@ public class ReceptionServiceImpl implements ReceptionService {
         DonDatPhong booking = bookingRepo.findById(maDatPhong)
                 .orElseThrow(() -> new BusinessException("Đơn đặt phòng không tồn tại: " + maDatPhong));
 
-        if (!"CONFIRMED".equals(booking.getTrangThaiDon())) {
-            throw new BusinessException("Đơn phòng chưa đủ điều kiện Check-in (Trạng thái hiện tại: " + booking.getTrangThaiDon() + ", yêu cầu CONFIRMED)");
+        if (!"CONFIRMED".equalsIgnoreCase(booking.getTrangThaiDon()) && !"PENDING".equalsIgnoreCase(booking.getTrangThaiDon())) {
+            throw new BusinessException("Đơn phòng không thể Check-in (Trạng thái hiện tại: " + booking.getTrangThaiDon() + ", yêu cầu CONFIRMED hoặc PENDING)");
         }
 
-        Phong room = phongRepo.findById(maPhongCuThe)
-                .orElseThrow(() -> new BusinessException("Phòng không tồn tại: " + maPhongCuThe));
+        Phong room = null;
+        if (maPhongCuThe != null && !maPhongCuThe.isBlank()) {
+            room = phongRepo.findById(maPhongCuThe)
+                    .orElseThrow(() -> new BusinessException("Phòng không tồn tại: " + maPhongCuThe));
+        } else {
+            // Lấy phòng đã gán trước đó từ ChiTietDatPhong
+            List<ChiTietDatPhong> ctdpList = chiTietDatPhongRepo.findByDonDatPhong(booking);
+            if (ctdpList != null && !ctdpList.isEmpty()) {
+                room = ctdpList.get(0).getPhong();
+            }
+        }
 
-        // Kiểm tra phòng được gán đúng loại phòng khách đã đặt
+        if (room == null) {
+            throw new BusinessException("Đơn phòng chưa được gán số phòng cụ thể. Vui lòng chọn phòng để Check-in!");
+        }
+
+        // Kiểm tra loại phòng phải khớp chính xác loại phòng khách đã đặt
         if (booking.getLoaiPhong() != null && !room.getLoaiPhong().getMaLoaiPhong().equals(booking.getLoaiPhong().getMaLoaiPhong())) {
             throw new BusinessException("Phòng gán (" + room.getSoPhong() + " - " + room.getLoaiPhong().getTenLoaiPhong()
                     + ") không khớp với loại phòng khách đã đặt (" + booking.getLoaiPhong().getTenLoaiPhong() + ")!");
         }
 
-        if (!"AVAILABLE".equals(room.getTrangThaiPhong())) {
+        if (!"AVAILABLE".equalsIgnoreCase(room.getTrangThaiPhong()) && !"OCCUPIED".equalsIgnoreCase(room.getTrangThaiPhong())) {
             throw new BusinessException("Phòng " + room.getSoPhong() + " hiện không ở trạng thái sẵn sàng để nhận khách (Trạng thái: " + room.getTrangThaiPhong() + ")!");
         }
 
-        ChiTietDatPhong ctdp = new ChiTietDatPhong(booking, room, room.getSoPhong());
-        chiTietDatPhongRepo.save(ctdp);
+        // Đảm bảo ChiTietDatPhong được lưu
+        List<ChiTietDatPhong> ctdpList = chiTietDatPhongRepo.findByDonDatPhong(booking);
+        if (ctdpList == null || ctdpList.isEmpty()) {
+            ChiTietDatPhong ctdp = new ChiTietDatPhong(booking, room, room.getSoPhong());
+            chiTietDatPhongRepo.save(ctdp);
+        }
 
         room.setTrangThaiPhong("OCCUPIED");
         booking.setTrangThaiDon("CHECKED_IN");
         if (maNhanVien != null && !maNhanVien.isBlank()) {
-            booking.setNhanVien(nhanVienRepo.findById(maNhanVien).orElse(null));
+            nhanVienRepo.findById(maNhanVien).ifPresent(booking::setNhanVien);
         }
 
         phongRepo.save(room);
@@ -166,12 +287,17 @@ public class ReceptionServiceImpl implements ReceptionService {
         DonDatPhong booking = bookingRepo.findBookingForReception(keyword)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy đơn đặt phòng với từ khóa: " + keyword));
 
+        return mapToBookingResponse(booking);
+    }
+
+    private BookingResponse mapToBookingResponse(DonDatPhong booking) {
         long soDem = ChronoUnit.DAYS.between(booking.getThoiGianNhanPhong(), booking.getThoiGianTraPhong());
         String maPhong = null;
         String soPhong = null;
 
-        if (booking.getDanhSachChiTietDatPhong() != null && !booking.getDanhSachChiTietDatPhong().isEmpty()) {
-            ChiTietDatPhong ctdp = booking.getDanhSachChiTietDatPhong().get(0);
+        List<ChiTietDatPhong> chiTietList = chiTietDatPhongRepo.findByDonDatPhong(booking);
+        if (chiTietList != null && !chiTietList.isEmpty()) {
+            ChiTietDatPhong ctdp = chiTietList.get(0);
             maPhong = ctdp.getPhong() != null ? ctdp.getPhong().getMaPhong() : null;
             soPhong = ctdp.getSoPhong();
         }
