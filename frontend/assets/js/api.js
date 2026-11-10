@@ -3,10 +3,10 @@
  * Handles HTTP requests, JWT token attachment, Toast notifications, and formatting.
  */
 
-// Dynamic API base URL: respects custom override or detects current host:8080
+// Dynamic API base URL: respects custom override or uses relative path (through Nginx reverse proxy)
 const API_BASE = window.API_BASE 
   || localStorage.getItem('melia_api_base') 
-  || (window.location.protocol.startsWith('http') ? `${window.location.protocol}//${window.location.hostname || 'localhost'}:8080` : 'http://localhost:8080');
+  || (window.location.protocol.startsWith('http') ? '' : 'http://localhost:8088');
 
 // Global HTTP request handler
 async function apiRequest(endpoint, options = {}) {

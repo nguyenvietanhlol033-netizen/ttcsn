@@ -6,10 +6,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: melia-hotel-backend
+    image: ttcsn-backend:latest
+    container_name: ttcsn-backend
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8088}:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=h2
       - TZ=Asia/Ho_Chi_Minh
@@ -21,24 +22,25 @@ services:
       retries: 5
       start_period: 25s
     networks:
-      - melia-net
+      - ttcsn-net
 
   # =========================================================================
-  # 2. FRONTEND SERVICE (Nginx Alpine + Liquid Glass UI/UX Pro Max)
+  # 2. FRONTEND SERVICE (Nginx Alpine + Liquid Glass UI)
   # =========================================================================
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: melia-hotel-frontend
+    image: ttcsn-frontend:latest
+    container_name: ttcsn-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3001}:80"
     depends_on:
       backend:
         condition: service_healthy
     networks:
-      - melia-net
+      - ttcsn-net
 
   # =========================================================================
   # 3. MYSQL DATABASE SERVICE (Tùy chọn: Chạy khi cần MySQL thay vì H2)
@@ -46,25 +48,26 @@ services:
   # =========================================================================
   mysql:
     image: mysql:8
-    container_name: melia-hotel-mysql
+    container_name: ttcsn-mysql
     profiles:
       - with-mysql
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: melia_hotel_db
       TZ: Asia/Ho_Chi_Minh
     volumes:
       - ./backend/melia_hotel_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-      - mysql_data:/var/lib/mysql
+      - ttcsn_mysql_data:/var/lib/mysql
     networks:
-      - melia-net
+      - ttcsn-net
 
 networks:
-  melia-net:
+  ttcsn-net:
+    name: ttcsn-net
     driver: bridge
 
 volumes:
-  mysql_data:
+  ttcsn_mysql_data:

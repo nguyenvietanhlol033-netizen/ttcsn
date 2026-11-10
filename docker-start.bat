@@ -25,18 +25,18 @@ if %errorlevel% neq 0 (
 )
 
 echo [2/3] Đang khởi chạy hệ thống qua Docker Compose...
-docker compose up -d --build
+docker compose up -d
 
 echo.
 echo [3/3] Đang mở giao diện trên trình duyệt...
 timeout /t 3 /nobreak >nul
-start "" http://localhost:3000
+start "" http://localhost:3001
 
 echo =========================================================================
 echo    HỆ THỐNG ĐÃ SẴN SÀNG HOẠT ĐỘNG!
-echo    - Cổng Khách hàng (Frontend):   http://localhost:3000
-echo    - Cổng Quản trị Lễ tân/Admin:  http://localhost:3000/admin.html
-echo    - API Backend & Swagger UI:     http://localhost:8080/swagger-ui.html
+echo    - Cổng Khách hàng (Frontend):   http://localhost:3001
+echo    - Cổng Quản trị Lễ tân/Admin:  http://localhost:3001/admin.html
+echo    - API Backend & Swagger UI:     http://localhost:8088/swagger-ui.html
 echo =========================================================================
 echo Để dừng hệ thống, chạy file: docker-stop.bat
 echo =========================================================================
